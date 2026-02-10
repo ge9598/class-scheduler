@@ -1,0 +1,74 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/student/calendar/calendar",
+    "pages/student/lesson-detail/lesson-detail",
+    "pages/student/my-courses/my-courses",
+    "pages/student/profile/profile",
+    "pages/teacher/calendar/calendar",
+    "pages/teacher/lesson-detail/lesson-detail",
+    "pages/teacher/profile/profile",
+    "pages/admin/calendar/calendar",
+    "pages/admin/schedule/schedule",
+    "pages/admin/lesson-detail/lesson-detail",
+    "pages/admin/users/users",
+    "pages/admin/courses/courses",
+    "pages/admin/enrollments/enrollments",
+    "pages/admin/profile/profile"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#4A90D9",
+    "navigationBarTitleText": "授课管理",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F5F6FA",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#999999",
+    "selectedColor": "#4A90D9",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/student/calendar/calendar",
+        "text": "课程表"
+      },
+      {
+        "pagePath": "pages/student/my-courses/my-courses",
+        "text": "我的课程"
+      },
+      {
+        "pagePath": "pages/student/profile/profile",
+        "text": "我的"
+      },
+      {
+        "pagePath": "pages/teacher/calendar/calendar",
+        "text": "课程表"
+      },
+      {
+        "pagePath": "pages/teacher/profile/profile",
+        "text": "我的"
+      },
+      {
+        "pagePath": "pages/admin/calendar/calendar",
+        "text": "课程表"
+      },
+      {
+        "pagePath": "pages/admin/schedule/schedule",
+        "text": "排课"
+      },
+      {
+        "pagePath": "pages/admin/users/users",
+        "text": "用户"
+      },
+      {
+        "pagePath": "pages/admin/profile/profile",
+        "text": "我的"
+      }
+    ]
+  },
+  "usingComponents": {},
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

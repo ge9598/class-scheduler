@@ -1,0 +1,7 @@
+<view class="container">
+  <view class="page-title">全局课程表</view>
+  <!-- Phase 3: 日历组件 + 筛选 + 课程卡片列表 -->
+  <view class="card">
+    <text class="text-hint">全局日历视图将在 Phase 3 实现</text>
+  </view>
+</view>

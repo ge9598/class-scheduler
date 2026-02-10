@@ -1,0 +1,29 @@
+<view class="calendar">
+  <!-- 月份导航 -->
+  <view class="calendar-header">
+    <van-icon name="arrow-left" bind:click="prevMonth" custom-class="nav-icon" />
+    <text class="month-title">{{ year }}年{{ month }}月</text>
+    <van-icon name="arrow" bind:click="nextMonth" custom-class="nav-icon" />
+  </view>
+
+  <!-- 星期头 -->
+  <view class="week-header">
+    <view class="week-day" wx:for="{{ weekDays }}" wx:key="*this">
+      {{ item }}
+    </view>
+  </view>
+
+  <!-- 日期网格 -->
+  <view class="days-grid">
+    <view
+      wx:for="{{ days }}"
+      wx:key="date"
+      class="day-cell {{ item.isToday ? 'today' : '' }} {{ selectedDate === item.date ? 'selected' : '' }}"
+      data-date="{{ item.date }}"
+      bind:tap="onDayTap"
+    >
+      <text class="day-text">{{ item.day }}</text>
+      <view wx:if="{{ item.isMarked }}" class="dot"></view>
+    </view>
+  </view>
+</view>

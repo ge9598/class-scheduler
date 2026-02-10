@@ -1,0 +1,6 @@
+<view class="container">
+  <view class="page-title">课程详情</view>
+  <view class="card">
+    <text class="text-hint">课程详情（含写反馈）将在 Phase 3/5 实现</text>
+  </view>
+</view>

@@ -1,0 +1,33 @@
+.lesson-card {
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.course-name {
+  font-size: var(--font-lg);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.lesson-info {
+  margin-top: var(--spacing-sm);
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  margin-top: 8rpx;
+}
+
+.info-label {
+  font-size: var(--font-sm);
+  color: var(--text-hint);
+  width: 80rpx;
+  flex-shrink: 0;
+}
+
+.info-value {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  flex: 1;
+}

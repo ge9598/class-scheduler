@@ -1,0 +1,9 @@
+<van-tabbar active="{{ active }}" bind:change="onChange" active-color="#4A90D9" inactive-color="#999999">
+  <van-tabbar-item
+    wx:for="{{ tabBars[role] }}"
+    wx:key="url"
+    icon="{{ item.icon }}"
+  >
+    {{ item.text }}
+  </van-tabbar-item>
+</van-tabbar>

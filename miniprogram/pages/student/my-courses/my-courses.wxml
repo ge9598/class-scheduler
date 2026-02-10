@@ -1,0 +1,6 @@
+<view class="container">
+  <view class="page-title">我的课程</view>
+  <view class="card">
+    <text class="text-hint">购课记录将在 Phase 7 实现</text>
+  </view>
+</view>

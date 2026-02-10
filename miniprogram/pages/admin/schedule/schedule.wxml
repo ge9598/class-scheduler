@@ -1,0 +1,6 @@
+<view class="container">
+  <view class="page-title">排课</view>
+  <view class="card">
+    <text class="text-hint">排课功能将在 Phase 2 实现</text>
+  </view>
+</view>

@@ -1,0 +1,56 @@
+<view class="feedback-form">
+  <view class="form-section">
+    <text class="section-title">反馈内容</text>
+    <textarea
+      class="content-input"
+      placeholder="请输入反馈内容（至少20字）"
+      value="{{ content }}"
+      bindinput="onContentInput"
+      maxlength="2000"
+      auto-height
+    />
+    <text class="char-count text-hint">{{ content.length }}/2000</text>
+  </view>
+
+  <view class="form-section">
+    <text class="section-title">图片（可选，最多9张）</text>
+    <view class="image-grid">
+      <view
+        wx:for="{{ images }}"
+        wx:key="*this"
+        class="image-item"
+      >
+        <image
+          src="{{ item }}"
+          mode="aspectFill"
+          data-url="{{ item }}"
+          bind:tap="previewImage"
+        />
+        <van-icon
+          name="cross"
+          class="remove-btn"
+          data-index="{{ index }}"
+          bind:click="removeImage"
+        />
+      </view>
+      <view
+        wx:if="{{ images.length < 9 }}"
+        class="image-add"
+        bind:tap="chooseImage"
+      >
+        <van-icon name="plus" size="48rpx" color="#999" />
+      </view>
+    </view>
+  </view>
+
+  <van-button
+    type="primary"
+    block
+    round
+    loading="{{ submitting }}"
+    loading-text="提交中..."
+    bind:click="submit"
+  >
+    提交反馈
+  </van-button>
+</view>

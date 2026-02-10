@@ -1,0 +1,8 @@
+{
+  "name": "class-scheduler-miniprogram",
+  "version": "1.0.0",
+  "description": "授课管理系统微信小程序",
+  "dependencies": {
+    "@vant/weapp": "^1.11.6"
+  }
+}

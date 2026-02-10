@@ -1,0 +1,29 @@
+<view class="lesson-card card" bind:tap="onTap">
+  <view class="flex-between">
+    <text class="course-name">{{ lesson.courseName }}</text>
+    <van-tag wx:if="{{ lesson.status === 'cancelled' }}" type="danger" plain>已取消</van-tag>
+    <van-tag wx:elif="{{ lesson.status === 'completed' }}" type="success" plain>已完成</van-tag>
+  </view>
+
+  <view class="lesson-info">
+    <view class="info-row">
+      <text class="info-label">时间</text>
+      <text class="info-value">{{ lesson.startTime }} - {{ lesson.endTime }}</text>
+    </view>
+
+    <view class="info-row" wx:if="{{ mode === 'student' || mode === 'admin' }}">
+      <text class="info-label">老师</text>
+      <text class="info-value">{{ lesson.teacherName }}</text>
+    </view>
+
+    <view class="info-row" wx:if="{{ mode === 'teacher' || mode === 'admin' }}">
+      <text class="info-label">学生</text>
+      <text class="info-value ellipsis">{{ lesson.studentNames }}</text>
+    </view>
+
+    <view class="info-row" wx:if="{{ lesson.location }}">
+      <text class="info-label">地点</text>
+      <text class="info-value">{{ lesson.location }}</text>
+    </view>
+  </view>
+</view>
