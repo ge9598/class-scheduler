@@ -1,6 +1,212 @@
 <view class="container">
-  <view class="page-title">排课</view>
-  <view class="card">
-    <text class="text-hint">排课功能将在 Phase 2 实现</text>
+  <view class="page-title">{{ editMode ? '编辑排课' : '新建排课' }}</view>
+
+  <van-cell-group inset>
+    <!-- 选择课程 -->
+    <van-cell
+      title="课程"
+      value="{{ selectedCourseName || '请选择课程' }}"
+      is-link
+      required
+      bind:click="showCoursePicker"
+      value-class="{{ selectedCourseName ? '' : 'placeholder' }}"
+    />
+
+    <!-- 选择老师 -->
+    <van-cell
+      title="授课老师"
+      value="{{ selectedTeacherName || '请选择老师' }}"
+      is-link
+      required
+      bind:click="showTeacherPicker"
+      value-class="{{ selectedTeacherName ? '' : 'placeholder' }}"
+    />
+
+    <!-- 选择学生 -->
+    <van-cell
+      title="学生"
+      is-link
+      required
+      bind:click="showStudentPicker"
+      value-class="{{ selectedStudentNames.length > 0 ? '' : 'placeholder' }}"
+    >
+      <view wx:if="{{ selectedStudentNames.length > 0 }}" class="student-tags">
+        <van-tag
+          wx:for="{{ selectedStudentNames }}"
+          wx:key="index"
+          type="primary"
+          plain
+          size="medium"
+          custom-style="margin: 4rpx;"
+        >{{ item }}</van-tag>
+      </view>
+      <text wx:else>请选择学生</text>
+    </van-cell>
+
+    <!-- 选择日期 -->
+    <van-cell
+      title="上课日期"
+      value="{{ form.date || '请选择日期' }}"
+      is-link
+      required
+      bind:click="showDatePicker"
+      value-class="{{ form.date ? '' : 'placeholder' }}"
+    />
+
+    <!-- 选择开始时间 -->
+    <van-cell
+      title="开始时间"
+      value="{{ form.startTime || '请选择' }}"
+      is-link
+      required
+      bind:click="showStartTimePicker"
+      value-class="{{ form.startTime ? '' : 'placeholder' }}"
+    />
+
+    <!-- 选择结束时间 -->
+    <van-cell
+      title="结束时间"
+      value="{{ form.endTime || '请选择' }}"
+      is-link
+      required
+      bind:click="showEndTimePicker"
+      value-class="{{ form.endTime ? '' : 'placeholder' }}"
+    />
+
+    <!-- 上课地点 -->
+    <van-field
+      value="{{ form.location }}"
+      label="上课地点"
+      placeholder="选填"
+      bind:change="onLocationChange"
+    />
+  </van-cell-group>
+
+  <!-- 提交按钮 -->
+  <view class="submit-area">
+    <van-button
+      type="primary"
+      block
+      round
+      loading="{{ submitting }}"
+      bind:click="handleSubmit"
+    >
+      {{ editMode ? '保存修改' : '确认排课' }}
+    </van-button>
   </view>
+
+  <!-- 今日排课列表 -->
+  <view class="section" wx:if="{{ !editMode }}">
+    <view class="section-title">最近排课</view>
+    <view wx:if="{{ recentLessons.length > 0 }}">
+      <view
+        class="lesson-item card"
+        wx:for="{{ recentLessons }}"
+        wx:key="_id"
+      >
+        <view class="flex-between">
+          <view class="lesson-name">{{ item.courseName }}</view>
+          <van-tag
+            type="{{ item.status === 'scheduled' ? 'primary' : item.status === 'completed' ? 'success' : 'default' }}"
+            plain
+          >{{ statusLabels[item.status] }}</van-tag>
+        </view>
+        <view class="lesson-info text-secondary">
+          {{ item.date }} {{ item.startTime }}-{{ item.endTime }}
+        </view>
+        <view class="lesson-info text-secondary">
+          老师：{{ item.teacherName }} · 学生：{{ item.studentNames.length }}人
+        </view>
+        <view class="lesson-actions" wx:if="{{ item.status === 'scheduled' }}">
+          <van-button size="mini" bind:tap="handleEdit" data-lesson="{{ item }}">编辑</van-button>
+          <van-button size="mini" type="success" bind:tap="handleComplete" data-id="{{ item._id }}">完成</van-button>
+          <van-button size="mini" type="danger" bind:tap="handleCancel" data-id="{{ item._id }}" data-name="{{ item.courseName }}">取消</van-button>
+        </view>
+      </view>
+    </view>
+    <van-empty
+      wx:if="{{ !loadingLessons && recentLessons.length === 0 }}"
+      description="暂无排课记录"
+      image="search"
+    />
+  </view>
+
+  <!-- 课程选择弹窗 -->
+  <van-popup show="{{ showCourse }}" position="bottom" round bind:close="closePickers">
+    <van-picker
+      show-toolbar
+      title="选择课程"
+      columns="{{ courseColumns }}"
+      bind:confirm="onCourseConfirm"
+      bind:cancel="closePickers"
+    />
+  </van-popup>
+
+  <!-- 老师选择弹窗 -->
+  <van-popup show="{{ showTeacher }}" position="bottom" round bind:close="closePickers">
+    <van-picker
+      show-toolbar
+      title="选择老师"
+      columns="{{ teacherColumns }}"
+      bind:confirm="onTeacherConfirm"
+      bind:cancel="closePickers"
+    />
+  </van-popup>
+
+  <!-- 学生多选弹窗 -->
+  <van-popup show="{{ showStudent }}" position="bottom" round bind:close="closePickers" custom-style="max-height: 60vh;">
+    <view class="student-picker-header flex-between">
+      <van-button size="small" bind:tap="closePickers">取消</van-button>
+      <text class="student-picker-title">选择学生</text>
+      <van-button size="small" type="primary" bind:tap="confirmStudents">确定</van-button>
+    </view>
+    <view class="student-picker-list">
+      <van-checkbox-group value="{{ tempStudentIds }}" bind:change="onStudentChange">
+        <view
+          class="student-check-item"
+          wx:for="{{ studentList }}"
+          wx:key="_id"
+        >
+          <van-checkbox
+            name="{{ item._id }}"
+            shape="square"
+          >{{ item.name }}（{{ item.phone }}）</van-checkbox>
+        </view>
+      </van-checkbox-group>
+      <van-empty wx:if="{{ studentList.length === 0 }}" description="暂无学生" image="search" />
+    </view>
+  </van-popup>
+
+  <!-- 日期选择弹窗 -->
+  <van-popup show="{{ showDate }}" position="bottom" round bind:close="closePickers">
+    <van-datetime-picker
+      type="date"
+      value="{{ dateValue }}"
+      min-date="{{ minDate }}"
+      bind:confirm="onDateConfirm"
+      bind:cancel="closePickers"
+    />
+  </van-popup>
+
+  <!-- 开始时间选择弹窗 -->
+  <van-popup show="{{ showStartTime }}" position="bottom" round bind:close="closePickers">
+    <van-datetime-picker
+      type="time"
+      value="{{ form.startTime || '09:00' }}"
+      bind:confirm="onStartTimeConfirm"
+      bind:cancel="closePickers"
+    />
+  </van-popup>
+
+  <!-- 结束时间选择弹窗 -->
+  <van-popup show="{{ showEndTime }}" position="bottom" round bind:close="closePickers">
+    <van-datetime-picker
+      type="time"
+      value="{{ form.endTime || '10:00' }}"
+      bind:confirm="onEndTimeConfirm"
+      bind:cancel="closePickers"
+    />
+  </van-popup>
+
+  <van-dialog id="van-dialog" />
 </view>

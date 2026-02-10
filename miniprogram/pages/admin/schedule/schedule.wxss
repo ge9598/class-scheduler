@@ -1,1 +1,59 @@
-/* admin schedule page styles */
+.placeholder {
+  color: var(--text-hint) !important;
+}
+
+.student-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.submit-area {
+  padding: var(--spacing-lg) 0;
+}
+
+.section {
+  margin-top: var(--spacing-md);
+}
+
+.lesson-item {
+  margin-bottom: var(--spacing-sm);
+}
+
+.lesson-name {
+  font-size: var(--font-md);
+  font-weight: 500;
+}
+
+.lesson-info {
+  font-size: var(--font-sm);
+  margin-top: 8rpx;
+}
+
+.lesson-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 16rpx;
+  justify-content: flex-end;
+}
+
+/* 学生多选弹窗 */
+.student-picker-header {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1rpx solid var(--border-color);
+}
+
+.student-picker-title {
+  font-size: var(--font-lg);
+  font-weight: 500;
+}
+
+.student-picker-list {
+  padding: var(--spacing-md) var(--spacing-lg);
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.student-check-item {
+  padding: var(--spacing-sm) 0;
+}

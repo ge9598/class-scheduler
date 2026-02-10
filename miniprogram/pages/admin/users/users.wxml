@@ -1,6 +1,155 @@
 <view class="container">
-  <view class="page-title">用户管理</view>
-  <view class="card">
-    <text class="text-hint">用户管理将在 Phase 2 实现</text>
+  <!-- 顶部操作栏 -->
+  <view class="header flex-between">
+    <view class="page-title">用户管理</view>
+    <van-button type="primary" size="small" icon="plus" bind:click="showAddDialog">
+      添加用户
+    </van-button>
   </view>
+
+  <!-- 角色筛选 -->
+  <view class="filter-bar">
+    <van-button
+      size="small"
+      plain="{{ roleFilter !== 'all' }}"
+      type="{{ roleFilter === 'all' ? 'primary' : 'default' }}"
+      bind:click="setFilter"
+      data-role="all"
+    >全部</van-button>
+    <van-button
+      size="small"
+      plain="{{ roleFilter !== 'teacher' }}"
+      type="{{ roleFilter === 'teacher' ? 'primary' : 'default' }}"
+      bind:click="setFilter"
+      data-role="teacher"
+    >老师</van-button>
+    <van-button
+      size="small"
+      plain="{{ roleFilter !== 'student' }}"
+      type="{{ roleFilter === 'student' ? 'primary' : 'default' }}"
+      bind:click="setFilter"
+      data-role="student"
+    >学生</van-button>
+    <van-button
+      size="small"
+      plain="{{ roleFilter !== 'admin' }}"
+      type="{{ roleFilter === 'admin' ? 'primary' : 'default' }}"
+      bind:click="setFilter"
+      data-role="admin"
+    >管理员</van-button>
+  </view>
+
+  <!-- 用户列表 -->
+  <view wx:if="{{ userList.length > 0 }}">
+    <van-swipe-cell
+      wx:for="{{ userList }}"
+      wx:key="_id"
+      right-width="{{ 130 }}"
+    >
+      <view class="user-card card" bind:tap="showEditDialog" data-user="{{ item }}">
+        <view class="flex-between">
+          <view class="flex-row">
+            <view class="user-avatar flex-center">
+              <text>{{ item.name[0] || '?' }}</text>
+            </view>
+            <view class="user-info">
+              <view class="user-name">{{ item.name }}</view>
+              <view class="user-phone text-hint">{{ item.phone }}</view>
+            </view>
+          </view>
+          <view class="flex-row">
+            <van-tag
+              wx:if="{{ !item.openid }}"
+              type="warning"
+              plain
+              size="medium"
+              custom-style="margin-right: 8rpx"
+            >待绑定</van-tag>
+            <van-tag
+              type="{{ item.role === 'admin' ? 'danger' : item.role === 'teacher' ? 'primary' : 'success' }}"
+              plain
+              size="medium"
+            >{{ roleLabels[item.role] }}</van-tag>
+          </view>
+        </view>
+      </view>
+      <view slot="right" class="swipe-actions">
+        <view class="swipe-btn edit-btn" bind:tap="showEditDialog" data-user="{{ item }}">编辑</view>
+        <view class="swipe-btn delete-btn" bind:tap="handleDelete" data-user="{{ item }}">删除</view>
+      </view>
+    </van-swipe-cell>
+  </view>
+
+  <!-- 空状态 -->
+  <van-empty
+    wx:if="{{ !loading && userList.length === 0 }}"
+    description="暂无用户"
+    image="search"
+  />
+
+  <!-- 添加/编辑用户弹窗 -->
+  <van-popup
+    show="{{ showDialog }}"
+    position="bottom"
+    round
+    closeable
+    bind:close="closeDialog"
+    custom-style="padding: 32rpx; padding-top: 60rpx;"
+  >
+    <view class="dialog-title">{{ editingUser ? '编辑用户' : '添加用户' }}</view>
+
+    <van-field
+      value="{{ form.name }}"
+      label="姓名"
+      placeholder="请输入姓名"
+      required
+      bind:change="onFormChange"
+      data-field="name"
+    />
+    <van-field
+      value="{{ form.phone }}"
+      label="手机号"
+      type="number"
+      maxlength="{{ 11 }}"
+      placeholder="请输入手机号"
+      required
+      bind:change="onFormChange"
+      data-field="phone"
+    />
+
+    <view class="role-picker">
+      <view class="role-label">角色 <text class="required">*</text></view>
+      <view class="role-options">
+        <van-button
+          size="small"
+          type="{{ form.role === 'teacher' ? 'primary' : 'default' }}"
+          plain="{{ form.role !== 'teacher' }}"
+          bind:click="onRoleSelect"
+          data-role="teacher"
+        >老师</van-button>
+        <van-button
+          size="small"
+          type="{{ form.role === 'student' ? 'primary' : 'default' }}"
+          plain="{{ form.role !== 'student' }}"
+          bind:click="onRoleSelect"
+          data-role="student"
+        >学生</van-button>
+        <van-button
+          size="small"
+          type="{{ form.role === 'admin' ? 'primary' : 'default' }}"
+          plain="{{ form.role !== 'admin' }}"
+          bind:click="onRoleSelect"
+          data-role="admin"
+        >管理员</van-button>
+      </view>
+    </view>
+
+    <view class="dialog-actions">
+      <van-button block type="primary" round bind:click="handleSubmit" loading="{{ submitting }}">
+        {{ editingUser ? '保存' : '添加' }}
+      </van-button>
+    </view>
+  </van-popup>
+
+  <van-dialog id="van-dialog" />
 </view>

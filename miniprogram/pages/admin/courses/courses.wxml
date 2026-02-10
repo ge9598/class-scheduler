@@ -1,6 +1,85 @@
 <view class="container">
-  <view class="page-title">课程管理</view>
-  <view class="card">
-    <text class="text-hint">课程模板管理将在 Phase 2 实现</text>
+  <!-- 顶部操作栏 -->
+  <view class="header flex-between">
+    <view class="page-title">课程管理</view>
+    <van-button type="primary" size="small" icon="plus" bind:click="showAddDialog">
+      添加课程
+    </van-button>
   </view>
+
+  <!-- 课程列表 -->
+  <view wx:if="{{ courseList.length > 0 }}">
+    <van-swipe-cell
+      wx:for="{{ courseList }}"
+      wx:key="_id"
+      right-width="{{ 130 }}"
+    >
+      <view class="course-card card" bind:tap="showEditDialog" data-course="{{ item }}">
+        <view class="course-name">{{ item.courseName }}</view>
+        <view class="course-desc text-hint" wx:if="{{ item.description }}">{{ item.description }}</view>
+        <view class="course-meta flex-between">
+          <text class="text-secondary">总课时：{{ item.totalLessons }}节</text>
+        </view>
+      </view>
+      <view slot="right" class="swipe-actions">
+        <view class="swipe-btn edit-btn" bind:tap="showEditDialog" data-course="{{ item }}">编辑</view>
+        <view class="swipe-btn delete-btn" bind:tap="handleDelete" data-course="{{ item }}">删除</view>
+      </view>
+    </van-swipe-cell>
+  </view>
+
+  <!-- 空状态 -->
+  <van-empty
+    wx:if="{{ !loading && courseList.length === 0 }}"
+    description="暂无课程"
+    image="search"
+  />
+
+  <!-- 添加/编辑课程弹窗 -->
+  <van-popup
+    show="{{ showDialog }}"
+    position="bottom"
+    round
+    closeable
+    bind:close="closeDialog"
+    custom-style="padding: 32rpx; padding-top: 60rpx;"
+  >
+    <view class="dialog-title">{{ editingCourse ? '编辑课程' : '添加课程' }}</view>
+
+    <van-field
+      value="{{ form.courseName }}"
+      label="课程名称"
+      placeholder="如：钢琴初级课"
+      required
+      bind:change="onFormChange"
+      data-field="courseName"
+    />
+    <van-field
+      value="{{ form.description }}"
+      label="课程简介"
+      type="textarea"
+      placeholder="请输入课程简介（选填）"
+      autosize
+      bind:change="onFormChange"
+      data-field="description"
+    />
+
+    <view class="stepper-row">
+      <text class="stepper-label">总课时 <text class="required">*</text></text>
+      <van-stepper
+        value="{{ form.totalLessons }}"
+        min="1"
+        max="999"
+        bind:change="onLessonsChange"
+      />
+    </view>
+
+    <view class="dialog-actions">
+      <van-button block type="primary" round bind:click="handleSubmit" loading="{{ submitting }}">
+        {{ editingCourse ? '保存' : '添加' }}
+      </van-button>
+    </view>
+  </van-popup>
+
+  <van-dialog id="van-dialog" />
 </view>

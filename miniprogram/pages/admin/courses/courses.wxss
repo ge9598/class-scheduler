@@ -1,1 +1,73 @@
-/* admin courses page styles */
+.header {
+  margin-bottom: var(--spacing-md);
+}
+
+.course-card {
+  margin-bottom: 0;
+}
+
+.course-name {
+  font-size: var(--font-lg);
+  font-weight: 500;
+  margin-bottom: 8rpx;
+}
+
+.course-desc {
+  font-size: var(--font-sm);
+  margin-bottom: 12rpx;
+  line-height: 1.5;
+}
+
+.course-meta {
+  font-size: var(--font-sm);
+}
+
+.swipe-actions {
+  display: flex;
+  height: 100%;
+}
+
+.swipe-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 130rpx;
+  height: 100%;
+  color: #fff;
+  font-size: var(--font-sm);
+}
+
+.edit-btn {
+  background-color: var(--primary-color);
+}
+
+.delete-btn {
+  background-color: var(--danger-color);
+}
+
+.dialog-title {
+  font-size: var(--font-xl);
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.stepper-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-sm);
+}
+
+.stepper-label {
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+}
+
+.required {
+  color: var(--danger-color);
+}
+
+.dialog-actions {
+  padding: var(--spacing-lg) 0;
+}

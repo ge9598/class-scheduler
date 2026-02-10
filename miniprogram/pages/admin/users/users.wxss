@@ -1,1 +1,92 @@
-/* admin users page styles */
+.header {
+  margin-bottom: var(--spacing-md);
+}
+
+.filter-bar {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: var(--spacing-md);
+}
+
+.user-card {
+  margin-bottom: 0;
+}
+
+.user-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), #6BB5FF);
+  color: #fff;
+  font-size: var(--font-lg);
+  font-weight: 600;
+  margin-right: var(--spacing-md);
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.user-name {
+  font-size: var(--font-md);
+  font-weight: 500;
+  margin-bottom: 4rpx;
+}
+
+.user-phone {
+  font-size: var(--font-sm);
+}
+
+.swipe-actions {
+  display: flex;
+  height: 100%;
+}
+
+.swipe-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 130rpx;
+  height: 100%;
+  color: #fff;
+  font-size: var(--font-sm);
+}
+
+.edit-btn {
+  background-color: var(--primary-color);
+}
+
+.delete-btn {
+  background-color: var(--danger-color);
+}
+
+.dialog-title {
+  font-size: var(--font-xl);
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.role-picker {
+  padding: var(--spacing-md) var(--spacing-sm);
+}
+
+.role-label {
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.required {
+  color: var(--danger-color);
+}
+
+.role-options {
+  display: flex;
+  gap: 16rpx;
+}
+
+.dialog-actions {
+  padding: var(--spacing-lg) 0;
+}
