@@ -37,6 +37,31 @@
   justify-content: flex-end;
 }
 
+/* 状态标签样式 */
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+}
+
+.status-tag.scheduled {
+  background-color: rgba(73, 73, 142, 0.12);
+  color: var(--secondary-color);
+}
+
+.status-tag.completed {
+  background-color: rgba(52, 199, 89, 0.12);
+  color: var(--success-color);
+}
+
+.status-tag.cancelled {
+  background-color: rgba(156, 163, 175, 0.12);
+  color: var(--text-hint);
+}
+
 /* 学生多选弹窗 */
 .student-picker-header {
   padding: var(--spacing-md) var(--spacing-lg);

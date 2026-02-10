@@ -85,7 +85,7 @@
   <!-- 提交按钮 -->
   <view class="submit-area">
     <van-button
-      type="primary"
+      class="btn-accent"
       block
       round
       loading="{{ submitting }}"
@@ -106,10 +106,7 @@
       >
         <view class="flex-between">
           <view class="lesson-name">{{ item.courseName }}</view>
-          <van-tag
-            type="{{ item.status === 'scheduled' ? 'primary' : item.status === 'completed' ? 'success' : 'default' }}"
-            plain
-          >{{ statusLabels[item.status] }}</van-tag>
+          <view class="status-tag {{ item.status }}">{{ statusLabels[item.status] }}</view>
         </view>
         <view class="lesson-info text-secondary">
           {{ item.date }} {{ item.startTime }}-{{ item.endTime }}
@@ -158,7 +155,7 @@
     <view class="student-picker-header flex-between">
       <van-button size="small" bind:tap="closePickers">取消</van-button>
       <text class="student-picker-title">选择学生</text>
-      <van-button size="small" type="primary" bind:tap="confirmStudents">确定</van-button>
+      <van-button class="btn-accent" size="small" bind:tap="confirmStudents">确定</van-button>
     </view>
     <view class="student-picker-list">
       <van-checkbox-group value="{{ tempStudentIds }}" bind:change="onStudentChange">

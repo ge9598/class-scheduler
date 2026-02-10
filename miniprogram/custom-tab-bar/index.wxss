@@ -1,1 +1,14 @@
-/* custom-tab-bar styles */
+/* 深色 TabBar 底栏 */
+:host {
+  --tabbar-background-color: #0f1a3c;
+}
+
+.van-tabbar {
+  background-color: #0f1a3c !important;
+  border-top: none !important;
+}
+
+/* 覆盖 Vant Tabbar 默认白色背景 */
+.van-tabbar::after {
+  border-top: none !important;
+}

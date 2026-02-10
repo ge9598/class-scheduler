@@ -1,15 +1,16 @@
 <view class="login-page">
   <view class="login-header">
     <view class="logo-placeholder">
-      <text class="logo-text">授课管理</text>
+      <text class="logo-text">EA</text>
     </view>
+    <text class="brand-name">未来精英学院</text>
     <text class="subtitle">课程排课 · 上课提醒 · 课后反馈</text>
   </view>
 
   <!-- 阶段1：微信登录 -->
   <view class="login-actions" wx:if="{{ step === 'login' }}">
     <van-button
-      type="primary"
+      class="btn-accent"
       block
       round
       loading="{{ loading }}"
@@ -22,44 +23,46 @@
 
   <!-- 阶段2：绑定手机号 -->
   <view class="bind-section" wx:if="{{ step === 'bind' }}">
-    <view class="bind-tip">
-      <van-icon name="info-o" size="16px" />
-      <text class="bind-tip-text">首次登录需绑定手机号，请联系管理员确认已添加您的信息</text>
-    </view>
+    <view class="bind-card">
+      <view class="bind-tip">
+        <van-icon name="info-o" size="16px" color="#49498e" />
+        <text class="bind-tip-text">首次登录需绑定手机号，请联系管理员确认已添加您的信息</text>
+      </view>
 
-    <!-- 微信一键授权模式 -->
-    <view wx:if="{{ useWxPhoneAuth }}" class="bind-actions">
-      <button
-        class="wx-phone-btn"
-        open-type="getPhoneNumber"
-        bindgetphonenumber="handleWxPhone"
-      >
-        微信授权绑定手机号
-      </button>
-    </view>
+      <!-- 微信一键授权模式 -->
+      <view wx:if="{{ useWxPhoneAuth }}" class="bind-actions">
+        <button
+          class="wx-phone-btn"
+          open-type="getPhoneNumber"
+          bindgetphonenumber="handleWxPhone"
+        >
+          微信授权绑定手机号
+        </button>
+      </view>
 
-    <!-- 手动输入手机号模式 -->
-    <view wx:else class="bind-form">
-      <van-field
-        value="{{ phone }}"
-        type="number"
-        maxlength="{{ 11 }}"
-        placeholder="请输入手机号"
-        border="{{ false }}"
-        bind:change="onPhoneChange"
-        custom-class="phone-field"
-      />
-      <van-button
-        type="primary"
-        block
-        round
-        loading="{{ binding }}"
-        loading-text="绑定中..."
-        disabled="{{ phone.length !== 11 }}"
-        bind:click="handleBindPhone"
-      >
-        绑定手机号
-      </van-button>
+      <!-- 手动输入手机号模式 -->
+      <view wx:else class="bind-form">
+        <van-field
+          value="{{ phone }}"
+          type="number"
+          maxlength="{{ 11 }}"
+          placeholder="请输入手机号"
+          border="{{ false }}"
+          bind:change="onPhoneChange"
+          custom-class="phone-field"
+        />
+        <van-button
+          class="btn-accent"
+          block
+          round
+          loading="{{ binding }}"
+          loading-text="绑定中..."
+          disabled="{{ phone.length !== 11 }}"
+          bind:click="handleBindPhone"
+        >
+          绑定手机号
+        </van-button>
+      </view>
     </view>
 
     <view class="back-link" bind:tap="handleBack">

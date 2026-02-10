@@ -1,22 +1,23 @@
 .lesson-card {
-  padding: var(--spacing-md);
-  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
 }
 
 .course-name {
   font-size: var(--font-lg);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-primary);
+  letter-spacing: 1rpx;
 }
 
 .lesson-info {
-  margin-top: var(--spacing-sm);
+  margin-top: var(--spacing-md);
 }
 
 .info-row {
   display: flex;
   align-items: center;
-  margin-top: 8rpx;
+  margin-top: 12rpx;
 }
 
 .info-label {

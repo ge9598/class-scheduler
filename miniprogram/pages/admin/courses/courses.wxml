@@ -2,7 +2,7 @@
   <!-- 顶部操作栏 -->
   <view class="header flex-between">
     <view class="page-title">课程管理</view>
-    <van-button type="primary" size="small" icon="plus" bind:click="showAddDialog">
+    <van-button class="btn-accent" size="small" icon="plus" bind:click="showAddDialog">
       添加课程
     </van-button>
   </view>
@@ -75,7 +75,7 @@
     </view>
 
     <view class="dialog-actions">
-      <van-button block type="primary" round bind:click="handleSubmit" loading="{{ submitting }}">
+      <van-button class="btn-accent" block round bind:click="handleSubmit" loading="{{ submitting }}">
         {{ editingCourse ? '保存' : '添加' }}
       </van-button>
     </view>

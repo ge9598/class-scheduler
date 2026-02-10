@@ -1,8 +1,8 @@
 .calendar {
   background-color: var(--bg-card);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-md);
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+  padding: var(--spacing-lg);
+  box-shadow: 0 1rpx 6rpx rgba(0, 0, 0, 0.03);
 }
 
 .calendar-header {
@@ -10,7 +10,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--spacing-sm) 0;
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
 }
 
 .month-title {
@@ -55,31 +55,40 @@
 .day-text {
   font-size: var(--font-md);
   color: var(--text-primary);
-  width: 64rpx;
-  height: 64rpx;
-  line-height: 64rpx;
+  width: 68rpx;
+  height: 68rpx;
+  line-height: 68rpx;
   text-align: center;
   border-radius: 50%;
 }
 
+/* 今日：星空紫圆圈 */
 .day-cell.today .day-text {
+  color: var(--secondary-color);
+  font-weight: 600;
+  border: 3rpx solid var(--secondary-color);
+}
+
+/* 选中日：荧光绿底 + 深色文字 */
+.day-cell.selected .day-text {
+  background-color: var(--accent-color);
   color: var(--primary-color);
   font-weight: 600;
 }
 
-.day-cell.selected .day-text {
-  background-color: var(--primary-color);
-  color: #ffffff;
+/* 选中+今日同时 */
+.day-cell.today.selected .day-text {
+  border-color: transparent;
 }
 
 .dot {
   width: 10rpx;
   height: 10rpx;
   border-radius: 50%;
-  background-color: var(--primary-color);
-  margin-top: 4rpx;
+  background-color: var(--secondary-color);
+  margin-top: 6rpx;
 }
 
 .day-cell.selected .dot {
-  background-color: #ffffff;
+  background-color: var(--primary-color);
 }

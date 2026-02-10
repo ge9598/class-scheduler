@@ -2,41 +2,33 @@
   <!-- 顶部操作栏 -->
   <view class="header flex-between">
     <view class="page-title">用户管理</view>
-    <van-button type="primary" size="small" icon="plus" bind:click="showAddDialog">
+    <van-button class="btn-accent" size="small" icon="plus" bind:click="showAddDialog">
       添加用户
     </van-button>
   </view>
 
-  <!-- 角色筛选 -->
+  <!-- 角色筛选 - pill 样式 -->
   <view class="filter-bar">
-    <van-button
-      size="small"
-      plain="{{ roleFilter !== 'all' }}"
-      type="{{ roleFilter === 'all' ? 'primary' : 'default' }}"
-      bind:click="setFilter"
+    <view
+      class="filter-pill {{ roleFilter === 'all' ? 'active' : '' }}"
+      bind:tap="setFilter"
       data-role="all"
-    >全部</van-button>
-    <van-button
-      size="small"
-      plain="{{ roleFilter !== 'teacher' }}"
-      type="{{ roleFilter === 'teacher' ? 'primary' : 'default' }}"
-      bind:click="setFilter"
+    >全部</view>
+    <view
+      class="filter-pill {{ roleFilter === 'teacher' ? 'active' : '' }}"
+      bind:tap="setFilter"
       data-role="teacher"
-    >老师</van-button>
-    <van-button
-      size="small"
-      plain="{{ roleFilter !== 'student' }}"
-      type="{{ roleFilter === 'student' ? 'primary' : 'default' }}"
-      bind:click="setFilter"
+    >老师</view>
+    <view
+      class="filter-pill {{ roleFilter === 'student' ? 'active' : '' }}"
+      bind:tap="setFilter"
       data-role="student"
-    >学生</van-button>
-    <van-button
-      size="small"
-      plain="{{ roleFilter !== 'admin' }}"
-      type="{{ roleFilter === 'admin' ? 'primary' : 'default' }}"
-      bind:click="setFilter"
+    >学生</view>
+    <view
+      class="filter-pill {{ roleFilter === 'admin' ? 'active' : '' }}"
+      bind:tap="setFilter"
       data-role="admin"
-    >管理员</van-button>
+    >管理员</view>
   </view>
 
   <!-- 用户列表 -->
@@ -120,32 +112,26 @@
     <view class="role-picker">
       <view class="role-label">角色 <text class="required">*</text></view>
       <view class="role-options">
-        <van-button
-          size="small"
-          type="{{ form.role === 'teacher' ? 'primary' : 'default' }}"
-          plain="{{ form.role !== 'teacher' }}"
-          bind:click="onRoleSelect"
+        <view
+          class="role-pill {{ form.role === 'teacher' ? 'active' : '' }}"
+          bind:tap="onRoleSelect"
           data-role="teacher"
-        >老师</van-button>
-        <van-button
-          size="small"
-          type="{{ form.role === 'student' ? 'primary' : 'default' }}"
-          plain="{{ form.role !== 'student' }}"
-          bind:click="onRoleSelect"
+        >老师</view>
+        <view
+          class="role-pill {{ form.role === 'student' ? 'active' : '' }}"
+          bind:tap="onRoleSelect"
           data-role="student"
-        >学生</van-button>
-        <van-button
-          size="small"
-          type="{{ form.role === 'admin' ? 'primary' : 'default' }}"
-          plain="{{ form.role !== 'admin' }}"
-          bind:click="onRoleSelect"
+        >学生</view>
+        <view
+          class="role-pill {{ form.role === 'admin' ? 'active' : '' }}"
+          bind:tap="onRoleSelect"
           data-role="admin"
-        >管理员</van-button>
+        >管理员</view>
       </view>
     </view>
 
     <view class="dialog-actions">
-      <van-button block type="primary" round bind:click="handleSubmit" loading="{{ submitting }}">
+      <van-button class="btn-accent" block round bind:click="handleSubmit" loading="{{ submitting }}">
         {{ editingUser ? '保存' : '添加' }}
       </van-button>
     </view>

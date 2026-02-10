@@ -1,5 +1,5 @@
 .feedback-form {
-  padding: var(--spacing-md);
+  padding: var(--spacing-lg);
 }
 
 .form-section {
@@ -9,12 +9,17 @@
 .content-input {
   width: 100%;
   min-height: 200rpx;
-  padding: var(--spacing-sm);
+  padding: var(--spacing-md);
   border: 2rpx solid var(--border-color);
   border-radius: var(--radius-md);
   font-size: var(--font-md);
   box-sizing: border-box;
   margin-top: var(--spacing-sm);
+  background-color: var(--primary-light);
+}
+
+.content-input:focus {
+  border-color: var(--secondary-color);
 }
 
 .char-count {
@@ -27,14 +32,14 @@
 .image-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 16rpx;
-  margin-top: var(--spacing-sm);
+  gap: 20rpx;
+  margin-top: var(--spacing-md);
 }
 
 .image-item {
   width: 200rpx;
   height: 200rpx;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   overflow: hidden;
   position: relative;
 }
@@ -46,20 +51,21 @@
 
 .remove-btn {
   position: absolute;
-  top: 4rpx;
-  right: 4rpx;
+  top: 8rpx;
+  right: 8rpx;
   background: rgba(0, 0, 0, 0.5);
   color: #fff;
   border-radius: 50%;
-  padding: 4rpx;
+  padding: 6rpx;
 }
 
 .image-add {
   width: 200rpx;
   height: 200rpx;
   border: 2rpx dashed var(--border-color);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: var(--primary-light);
 }
