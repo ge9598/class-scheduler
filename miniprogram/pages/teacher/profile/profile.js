@@ -1,4 +1,4 @@
-const { checkAuth } = require('../../../utils/auth')
+const { checkAuth, logout } = require('../../../utils/auth')
 
 Page({
   data: {
@@ -11,10 +11,18 @@ Page({
 
   onShow() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setActive(1)
+      this.getTabBar().setActive(2)
       this.getTabBar().setRole('teacher')
     }
     const app = getApp()
-    this.setData({ userInfo: app.globalData.userInfo })
+    this.setData({ userInfo: app.globalData.userInfo || {} })
+  },
+
+  goTodayLessons() {
+    wx.switchTab({ url: '/pages/teacher/calendar/calendar' })
+  },
+
+  handleLogout() {
+    logout()
   },
 })

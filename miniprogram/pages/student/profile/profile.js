@@ -1,4 +1,4 @@
-const { checkAuth } = require('../../../utils/auth')
+const { checkAuth, logout } = require('../../../utils/auth')
 
 Page({
   data: {
@@ -15,6 +15,14 @@ Page({
       this.getTabBar().setRole('student')
     }
     const app = getApp()
-    this.setData({ userInfo: app.globalData.userInfo })
+    this.setData({ userInfo: app.globalData.userInfo || {} })
+  },
+
+  goMyCourses() {
+    wx.switchTab({ url: '/pages/student/my-courses/my-courses' })
+  },
+
+  handleLogout() {
+    logout()
   },
 })

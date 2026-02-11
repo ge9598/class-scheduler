@@ -129,19 +129,38 @@ function getOpenid() {
 /**
  * 退出登录
  */
+/**
+ * 切换身份（开发测试用）
+ * @param {string} phone - 目标用户手机号
+ * @returns {Promise<object>} 用户信息
+ */
+async function switchUser(phone) {
+  const app = getApp()
+
+  const res = await callFunction('login', {
+    action: 'switchUser',
+    data: { phone },
+  }, { showLoading: true, loadingText: '切换中...' })
+
+  const { userInfo, openid } = res
+  _saveUserInfo(userInfo, openid)
+  return userInfo
+}
+
 function logout() {
   const app = getApp()
   app.globalData.userInfo = null
   app.globalData.role = null
   app.globalData.openid = null
   wx.clearStorageSync()
-  wx.redirectTo({ url: '/pages/login/login' })
+  wx.redirectTo({ url: '/pages/login/login?switchUser=1' })
 }
 
 module.exports = {
   login,
   bindPhone,
   bindPhoneByWx,
+  switchUser,
   checkAuth,
   getRole,
   getOpenid,

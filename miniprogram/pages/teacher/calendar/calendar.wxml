@@ -1,7 +1,31 @@
 <view class="container">
-  <view class="page-title">课程表</view>
-  <!-- Phase 3: 日历组件 + 课程卡片列表（含学生名单） -->
-  <view class="card">
-    <text class="text-hint">日历视图将在 Phase 3 实现</text>
+  <!-- 日历组件 -->
+  <calendar
+    markedDates="{{ markedDates }}"
+    selectedDate="{{ selectedDate }}"
+    bind:dayclick="onDayClick"
+    bind:monthchange="onMonthChange"
+  />
+
+  <!-- 加载中 -->
+  <view class="loading-wrap" wx:if="{{ loading }}">
+    <van-loading size="24px" color="var(--accent-color)">加载中...</van-loading>
   </view>
+
+  <!-- 当天课程列表 -->
+  <view class="day-lessons" wx:if="{{ !loading && dayLessons.length > 0 }}">
+    <view class="section-title">{{ selectedDate }} 共 {{ dayLessons.length }} 节课</view>
+    <lesson-card
+      wx:for="{{ dayLessons }}"
+      wx:key="_id"
+      lesson="{{ item }}"
+      mode="teacher"
+    />
+  </view>
+
+  <!-- 空状态 -->
+  <van-empty
+    wx:if="{{ !loading && dayLessons.length === 0 && selectedDate }}"
+    description="当天暂无课程"
+  />
 </view>

@@ -1,1 +1,17 @@
 /* admin calendar page styles */
+
+.loading-wrap {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-xl) 0;
+}
+
+.day-lessons {
+  margin-top: var(--spacing-md);
+}
+
+.day-lessons .section-title {
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+}

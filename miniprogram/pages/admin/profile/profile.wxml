@@ -1,6 +1,23 @@
 <view class="container">
-  <view class="page-title">个人中心</view>
-  <view class="card">
-    <text class="text-hint">个人中心将在 Phase 6 实现</text>
+  <!-- 用户信息 -->
+  <view class="profile-header card">
+    <view class="avatar flex-center">
+      <text>{{ userInfo.name[0] || '?' }}</text>
+    </view>
+    <view class="profile-info">
+      <view class="profile-name">{{ userInfo.name || '管理员' }}</view>
+      <view class="profile-role text-hint">管理员</view>
+    </view>
+  </view>
+
+  <!-- 管理功能入口 -->
+  <van-cell-group inset title="管理功能" border="{{ false }}">
+    <van-cell title="课程管理" is-link icon="orders-o" bind:click="goCourses" />
+    <van-cell title="购课管理" is-link icon="balance-list-o" bind:click="goEnrollments" />
+  </van-cell-group>
+
+  <!-- 退出登录 -->
+  <view class="logout-section">
+    <van-button plain round block type="danger" bind:click="handleLogout">退出登录</van-button>
   </view>
 </view>

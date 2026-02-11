@@ -1,6 +1,59 @@
 <view class="container">
-  <view class="page-title">课程详情</view>
-  <view class="card">
-    <text class="text-hint">课程详情将在 Phase 3 实现</text>
-  </view>
+  <van-loading wx:if="{{ loading }}" size="24px" color="var(--accent-color)" vertical>加载中...</van-loading>
+
+  <block wx:if="{{ !loading && lesson }}">
+    <!-- 课程状态 -->
+    <view class="status-bar">
+      <van-tag
+        type="{{ lesson.status === 'cancelled' ? 'danger' : lesson.status === 'completed' ? 'success' : 'primary' }}"
+        size="large"
+      >{{ statusLabels[lesson.status] }}</van-tag>
+    </view>
+
+    <!-- 课程信息卡片 -->
+    <view class="card detail-card">
+      <view class="detail-title">{{ lesson.courseName }}</view>
+
+      <view class="detail-row">
+        <text class="detail-label">日期</text>
+        <text class="detail-value">{{ lesson.date }}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">时间</text>
+        <text class="detail-value">{{ lesson.startTime }} - {{ lesson.endTime }}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">老师</text>
+        <text class="detail-value">{{ lesson.teacherName }}</text>
+      </view>
+      <view class="detail-row" wx:if="{{ lesson.location }}">
+        <text class="detail-label">地点</text>
+        <text class="detail-value">{{ lesson.location }}</text>
+      </view>
+    </view>
+
+    <!-- 老师反馈 -->
+    <view class="card feedback-card" wx:if="{{ feedback }}">
+      <view class="section-title">老师反馈</view>
+      <view class="feedback-content">{{ feedback.content }}</view>
+      <view class="feedback-images" wx:if="{{ feedback.images && feedback.images.length > 0 }}">
+        <image
+          wx:for="{{ feedback.images }}"
+          wx:key="*this"
+          src="{{ item }}"
+          mode="aspectFill"
+          class="feedback-img"
+          bind:tap="previewImage"
+          data-url="{{ item }}"
+          data-urls="{{ feedback.images }}"
+        />
+      </view>
+    </view>
+
+    <view class="card" wx:if="{{ lesson.status === 'completed' && !feedback }}">
+      <view class="text-hint" style="text-align: center;">老师暂未提交反馈</view>
+    </view>
+  </block>
+
+  <van-empty wx:if="{{ !loading && !lesson }}" description="课程不存在" />
 </view>

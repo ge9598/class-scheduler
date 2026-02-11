@@ -16,11 +16,20 @@ exports.main = async (event, context) => {
   const { action, data = {} } = event
 
   try {
+    // get action 允许所有已登录用户调用（内部校验权限）
+    if (action === 'get') {
+      const user = await checkPermission(openid)
+      return await handleGet(data, openid, user.role)
+    }
+
+    // 其他操作仅限管理员
     await checkPermission(openid, 'admin')
 
     switch (action) {
       case 'create':
         return await handleCreate(openid, data)
+      case 'batchCreate':
+        return await handleBatchCreate(openid, data)
       case 'update':
         return await handleUpdate(data)
       case 'cancel':
@@ -29,8 +38,6 @@ exports.main = async (event, context) => {
         return await handleComplete(data)
       case 'list':
         return await handleList(data)
-      case 'get':
-        return await handleGet(data)
       default:
         return { code: -1, message: '未知操作' }
     }
@@ -104,6 +111,110 @@ async function handleCreate(openid, data) {
     code: 0,
     message: '排课成功',
     data: { _id: addRes._id },
+  }
+}
+
+/**
+ * 批量排课（每周重复 N 周）
+ */
+async function handleBatchCreate(openid, data) {
+  const { courseId, teacherId, studentIds, date, startTime, endTime, location, repeatWeeks } = data
+
+  // 必填校验
+  if (!courseId) throw new Error('请选择课程')
+  if (!teacherId) throw new Error('请选择老师')
+  if (!studentIds || studentIds.length === 0) throw new Error('请选择学生')
+  if (!date) throw new Error('请选择日期')
+  if (!startTime || !endTime) throw new Error('请选择上课时间')
+  if (startTime >= endTime) throw new Error('结束时间必须晚于开始时间')
+  if (!repeatWeeks || repeatWeeks < 2 || repeatWeeks > 52) throw new Error('重复周数需在 2-52 之间')
+
+  // 获取冗余名称
+  const courseRes = await db.collection('courses').doc(courseId).get().catch(() => null)
+  if (!courseRes || !courseRes.data) throw new Error('课程不存在')
+  const courseName = courseRes.data.courseName
+
+  const teacherRes = await db.collection('users').doc(teacherId).get().catch(() => null)
+  if (!teacherRes || !teacherRes.data) throw new Error('老师不存在')
+  const teacherName = teacherRes.data.name
+
+  const studentNames = []
+  for (const sid of studentIds) {
+    const sRes = await db.collection('users').doc(sid).get().catch(() => null)
+    if (!sRes || !sRes.data) throw new Error(`学生 ${sid} 不存在`)
+    studentNames.push(sRes.data.name)
+  }
+
+  // 生成 N 个日期
+  const dates = []
+  const baseDate = new Date(date + 'T00:00:00+08:00')
+  for (let i = 0; i < repeatWeeks; i++) {
+    const d = new Date(baseDate.getTime() + i * 7 * 86400000)
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    dates.push(`${y}-${m}-${day}`)
+  }
+
+  // 逐个日期检测冲突，跳过冲突的
+  const created = []
+  const skipped = []
+  const now = db.serverDate()
+
+  for (const lessonDate of dates) {
+    let hasConflict = false
+
+    // 检测老师冲突
+    try {
+      await checkTeacherConflict(teacherId, lessonDate, startTime, endTime)
+    } catch (e) {
+      hasConflict = true
+    }
+
+    // 检测学生冲突
+    if (!hasConflict) {
+      try {
+        await checkStudentConflict(studentIds, lessonDate, startTime, endTime)
+      } catch (e) {
+        hasConflict = true
+      }
+    }
+
+    if (hasConflict) {
+      skipped.push(lessonDate)
+      continue
+    }
+
+    const addRes = await db.collection('lessons').add({
+      data: {
+        courseId,
+        courseName,
+        teacherId,
+        teacherName,
+        studentIds,
+        studentNames,
+        date: lessonDate,
+        startTime,
+        endTime,
+        location: location || '',
+        status: 'scheduled',
+        reminderSent: false,
+        createdBy: openid,
+        createdAt: now,
+        updatedAt: now,
+      },
+    })
+    created.push(addRes._id)
+  }
+
+  return {
+    code: 0,
+    message: `成功排课 ${created.length} 节` + (skipped.length > 0 ? `，跳过 ${skipped.length} 节` : ''),
+    data: {
+      created: created.length,
+      skipped,
+      total: repeatWeeks,
+    },
   }
 }
 
@@ -258,14 +369,24 @@ async function handleList(data) {
 /**
  * 获取单条排课详情
  */
-async function handleGet(data) {
+async function handleGet(data, openid, role) {
   const { _id } = data
   if (!_id) throw new Error('缺少排课 ID')
 
   const res = await db.collection('lessons').doc(_id).get().catch(() => null)
   if (!res || !res.data) throw new Error('排课记录不存在')
 
-  return { code: 0, data: res.data }
+  const lesson = res.data
+
+  // 非管理员需校验是否有权查看
+  if (role === 'teacher' && lesson.teacherId !== openid) {
+    throw new Error('无权查看此课程')
+  }
+  if (role === 'student' && !lesson.studentIds.includes(openid)) {
+    throw new Error('无权查看此课程')
+  }
+
+  return { code: 0, data: lesson }
 }
 
 /**

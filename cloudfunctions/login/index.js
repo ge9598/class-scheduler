@@ -15,6 +15,8 @@ exports.main = async (event, context) => {
         return await handleBindPhone(openid, data)
       case 'bindPhoneByWx':
         return await handleBindPhoneByWx(openid, data)
+      case 'switchUser':
+        return await handleSwitchUser(openid, data)
       default:
         return { code: -1, message: '未知操作' }
     }
@@ -129,5 +131,39 @@ async function bindUserByPhone(openid, phone) {
     openid,
     userInfo: activatedRes.data,
     message: '绑定成功',
+  }
+}
+
+/**
+ * 切换身份（开发测试用）：按手机号查找用户，返回其信息
+ */
+async function handleSwitchUser(openid, data) {
+  const { phone } = data
+  if (!phone) throw new Error('请输入手机号')
+
+  // 按手机号查找用户
+  const res = await db.collection('users')
+    .where({ phone })
+    .limit(1)
+    .get()
+
+  if (!res.data || res.data.length === 0) {
+    throw new Error('未找到该手机号对应的用户')
+  }
+
+  const user = res.data[0]
+
+  // 开发测试：将当前 openid 写入该用户记录（仅开发用，生产环境应移除）
+  if (!user.openid) {
+    await db.collection('users').doc(user._id).update({
+      data: { openid, updatedAt: db.serverDate() },
+    })
+    user.openid = openid
+  }
+
+  return {
+    code: 0,
+    openid,
+    userInfo: user,
   }
 }

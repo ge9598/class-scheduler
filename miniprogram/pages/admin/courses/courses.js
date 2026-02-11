@@ -36,6 +36,7 @@ Page({
   },
 
   showAddDialog() {
+    this._toggleTabBar(false)
     this.setData({
       showDialog: true,
       editingCourse: null,
@@ -45,6 +46,7 @@ Page({
 
   showEditDialog(e) {
     const course = e.currentTarget.dataset.course
+    this._toggleTabBar(false)
     this.setData({
       showDialog: true,
       editingCourse: course,
@@ -58,6 +60,13 @@ Page({
 
   closeDialog() {
     this.setData({ showDialog: false, editingCourse: null })
+    this._toggleTabBar(true)
+  },
+
+  _toggleTabBar(visible) {
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setShow(visible)
+    }
   },
 
   onFormChange(e) {

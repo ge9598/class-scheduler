@@ -1,4 +1,9 @@
 {
   "navigationBarTitleText": "课程详情",
-  "usingComponents": {}
+  "usingComponents": {
+    "van-tag": "@vant/weapp/tag/index",
+    "van-button": "@vant/weapp/button/index",
+    "van-loading": "@vant/weapp/loading/index",
+    "van-empty": "@vant/weapp/empty/index"
+  }
 }

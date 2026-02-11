@@ -7,6 +7,7 @@
     "pages/student/profile/profile",
     "pages/teacher/calendar/calendar",
     "pages/teacher/lesson-detail/lesson-detail",
+    "pages/teacher/my-courses/my-courses",
     "pages/teacher/profile/profile",
     "pages/admin/calendar/calendar",
     "pages/admin/schedule/schedule",
@@ -45,6 +46,10 @@
       {
         "pagePath": "pages/teacher/calendar/calendar",
         "text": "课程表"
+      },
+      {
+        "pagePath": "pages/teacher/my-courses/my-courses",
+        "text": "我的课程"
       },
       {
         "pagePath": "pages/teacher/profile/profile",

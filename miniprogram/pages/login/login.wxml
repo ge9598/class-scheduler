@@ -10,7 +10,8 @@
   <!-- 阶段1：微信登录 -->
   <view class="login-actions" wx:if="{{ step === 'login' }}">
     <van-button
-      class="btn-accent"
+      type="primary"
+      custom-class="btn-accent"
       block
       round
       loading="{{ loading }}"
@@ -21,16 +22,17 @@
     </van-button>
   </view>
 
-  <!-- 阶段2：绑定手机号 -->
+  <!-- 阶段2：绑定手机号 / 切换身份 -->
   <view class="bind-section" wx:if="{{ step === 'bind' }}">
     <view class="bind-card">
       <view class="bind-tip">
         <van-icon name="info-o" size="16px" color="#49498e" />
-        <text class="bind-tip-text">首次登录需绑定手机号，请联系管理员确认已添加您的信息</text>
+        <text class="bind-tip-text" wx:if="{{ !isSwitchMode }}">首次登录需绑定手机号，请联系管理员确认已添加您的信息</text>
+        <text class="bind-tip-text" wx:else>输入要切换的用户手机号</text>
       </view>
 
-      <!-- 微信一键授权模式 -->
-      <view wx:if="{{ useWxPhoneAuth }}" class="bind-actions">
+      <!-- 微信一键授权模式（仅首次绑定时显示） -->
+      <view wx:if="{{ useWxPhoneAuth && !isSwitchMode }}" class="bind-actions">
         <button
           class="wx-phone-btn"
           open-type="getPhoneNumber"
@@ -41,7 +43,7 @@
       </view>
 
       <!-- 手动输入手机号模式 -->
-      <view wx:else class="bind-form">
+      <view wx:if="{{ !useWxPhoneAuth || isSwitchMode }}" class="bind-form">
         <van-field
           value="{{ phone }}"
           type="number"
@@ -52,15 +54,16 @@
           custom-class="phone-field"
         />
         <van-button
-          class="btn-accent"
+          type="primary"
+          custom-class="btn-accent"
           block
           round
           loading="{{ binding }}"
-          loading-text="绑定中..."
+          loading-text="{{ isSwitchMode ? '切换中...' : '绑定中...' }}"
           disabled="{{ phone.length !== 11 }}"
           bind:click="handleBindPhone"
         >
-          绑定手机号
+          {{ isSwitchMode ? '切换身份' : '绑定手机号' }}
         </van-button>
       </view>
     </view>

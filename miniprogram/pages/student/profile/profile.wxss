@@ -1,1 +1,33 @@
 /* student profile page styles */
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.avatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: #fff;
+  font-size: var(--font-xxl);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.profile-name {
+  font-size: var(--font-lg);
+  font-weight: 600;
+}
+
+.profile-phone {
+  font-size: var(--font-sm);
+  margin-top: 4rpx;
+}
+
+.logout-section {
+  margin-top: var(--spacing-xl);
+  padding: 0 var(--spacing-md);
+}

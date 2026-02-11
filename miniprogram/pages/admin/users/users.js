@@ -56,6 +56,7 @@ Page({
   },
 
   showAddDialog() {
+    this._toggleTabBar(false)
     this.setData({
       showDialog: true,
       editingUser: null,
@@ -65,6 +66,7 @@ Page({
 
   showEditDialog(e) {
     const user = e.currentTarget.dataset.user
+    this._toggleTabBar(false)
     this.setData({
       showDialog: true,
       editingUser: user,
@@ -78,6 +80,13 @@ Page({
 
   closeDialog() {
     this.setData({ showDialog: false, editingUser: null })
+    this._toggleTabBar(true)
+  },
+
+  _toggleTabBar(visible) {
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setShow(visible)
+    }
   },
 
   onFormChange(e) {

@@ -1,35 +1,66 @@
 const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
+const _ = db.command
 
 /**
  * 权限校验
- * @param {string} openid
- * @param {string} [requiredRole] - 需要的角色，不传则只校验用户存在
- * @returns {Promise<object>} 用户数据
  */
-async function checkPermission(openid, requiredRole) {
+async function checkPermission(openid) {
   const userRes = await db.collection('users').doc(openid).get().catch(() => null)
   if (!userRes || !userRes.data) throw new Error('用户未注册')
-  if (requiredRole && userRes.data.role !== requiredRole) throw new Error('无权限操作')
   return userRes.data
 }
 
 exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext()
   const openid = wxContext.OPENID
-  const { year, month, date } = event
+  const { year, month, date, userId } = event
 
   try {
-    const user = await checkPermission(openid)
+    // 优先用 userId 查找用户（switchUser 场景）
+    let user
+    if (userId) {
+      const uidRes = await db.collection('users').doc(userId).get().catch(() => null)
+      if (uidRes && uidRes.data) user = uidRes.data
+    }
+    if (!user) {
+      // fallback: 用 openid 查找（正常登录场景）
+      user = await checkPermission(openid)
+    }
     const { role } = user
 
-    // TODO Phase 3: 根据角色和日期查询课程
-    // admin: 查看所有
-    // teacher: 查看 teacherId === openid
-    // student: 查看 studentIds 包含 openid
+    // 构建查询条件
+    const where = {}
 
-    return { code: 0, data: [] }
+    // 按角色过滤（用 user._id 匹配，而非 openid）
+    if (role === 'teacher') {
+      where.teacherId = user._id
+    } else if (role === 'student') {
+      where.studentIds = _.elemMatch(_.eq(user._id))
+    }
+    // admin 不加过滤，看全部
+
+    // 按日期过滤
+    if (date) {
+      // 精确日期查询
+      where.date = date
+    } else if (year && month) {
+      // 按月查询：匹配 YYYY-MM 前缀
+      const monthStr = String(month).padStart(2, '0')
+      const prefix = `${year}-${monthStr}`
+      where.date = _.gte(prefix + '-01').and(_.lte(prefix + '-31'))
+    }
+
+    // 查询（最多200条，按日期+时间排序）
+    const res = await db.collection('lessons')
+      .where(where)
+      .orderBy('date', 'asc')
+      .orderBy('startTime', 'asc')
+      .limit(200)
+      .get()
+
+    return { code: 0, data: res.data }
   } catch (err) {
     return { code: -1, message: err.message }
   }

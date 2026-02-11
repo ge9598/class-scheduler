@@ -1,6 +1,7 @@
 Component({
   data: {
     active: 0,
+    show: true,
     role: 'student',
     tabBars: {
       student: [
@@ -10,6 +11,7 @@ Component({
       ],
       teacher: [
         { url: '/pages/teacher/calendar/calendar', text: '课程表', icon: 'calendar-o' },
+        { url: '/pages/teacher/my-courses/my-courses', text: '我的课程', icon: 'records' },
         { url: '/pages/teacher/profile/profile', text: '我的', icon: 'contact' },
       ],
       admin: [
@@ -45,6 +47,10 @@ Component({
 
     setActive(index) {
       this.setData({ active: index })
+    },
+
+    setShow(visible) {
+      this.setData({ show: visible })
     },
   },
 })

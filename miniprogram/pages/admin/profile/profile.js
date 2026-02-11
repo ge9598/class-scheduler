@@ -1,4 +1,4 @@
-const { checkAuth } = require('../../../utils/auth')
+const { checkAuth, logout } = require('../../../utils/auth')
 
 Page({
   data: {
@@ -15,6 +15,18 @@ Page({
       this.getTabBar().setRole('admin')
     }
     const app = getApp()
-    this.setData({ userInfo: app.globalData.userInfo })
+    this.setData({ userInfo: app.globalData.userInfo || {} })
+  },
+
+  goCourses() {
+    wx.navigateTo({ url: '/pages/admin/courses/courses' })
+  },
+
+  goEnrollments() {
+    wx.navigateTo({ url: '/pages/admin/enrollments/enrollments' })
+  },
+
+  handleLogout() {
+    logout()
   },
 })

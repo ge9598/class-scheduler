@@ -1,1 +1,86 @@
-/* admin lesson detail page styles */
+.status-bar {
+  margin-bottom: var(--spacing-md);
+}
+
+.detail-card {
+  margin-bottom: var(--spacing-md);
+}
+
+.detail-title {
+  font-size: var(--font-xl);
+  font-weight: 600;
+  margin-bottom: var(--spacing-lg);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1rpx solid var(--border-color);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  color: var(--text-secondary);
+  font-size: var(--font-md);
+  flex-shrink: 0;
+  margin-right: var(--spacing-md);
+}
+
+.detail-value {
+  font-size: var(--font-md);
+  text-align: right;
+  flex: 1;
+}
+
+.feedback-card {
+  margin-top: var(--spacing-md);
+}
+
+.feedback-content {
+  font-size: var(--font-md);
+  line-height: 1.6;
+  color: var(--text-primary);
+  margin-top: var(--spacing-sm);
+}
+
+.feedback-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+.feedback-img {
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: var(--radius-sm);
+}
+
+.student-list {
+  margin-top: var(--spacing-sm);
+}
+
+.student-item {
+  display: inline-block;
+  background-color: var(--primary-light);
+  padding: 8rpx 20rpx;
+  border-radius: 24rpx;
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  margin: 0 var(--spacing-xs) var(--spacing-xs) 0;
+}
+
+.action-bar {
+  padding: var(--spacing-lg) 0;
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.action-bar van-button {
+  flex: 1;
+}

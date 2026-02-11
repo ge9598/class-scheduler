@@ -18,6 +18,8 @@ Page({
       startTime: '',
       endTime: '',
       location: '',
+      repeat: false,
+      repeatWeeks: 4,
     },
 
     // 选中项显示名称
@@ -162,6 +164,7 @@ Page({
       wx.showToast({ title: '暂无可选课程，请先创建', icon: 'none' })
       return
     }
+    this._toggleTabBar(false)
     this.setData({ showCourse: true })
   },
 
@@ -170,6 +173,7 @@ Page({
       wx.showToast({ title: '暂无已激活的老师', icon: 'none' })
       return
     }
+    this._toggleTabBar(false)
     this.setData({ showTeacher: true })
   },
 
@@ -178,15 +182,16 @@ Page({
       wx.showToast({ title: '暂无已激活的学生', icon: 'none' })
       return
     }
+    this._toggleTabBar(false)
     this.setData({
       showStudent: true,
       tempStudentIds: [...this.data.form.studentIds],
     })
   },
 
-  showDatePicker() { this.setData({ showDate: true }) },
-  showStartTimePicker() { this.setData({ showStartTime: true }) },
-  showEndTimePicker() { this.setData({ showEndTime: true }) },
+  showDatePicker() { this._toggleTabBar(false); this.setData({ showDate: true }) },
+  showStartTimePicker() { this._toggleTabBar(false); this.setData({ showStartTime: true }) },
+  showEndTimePicker() { this._toggleTabBar(false); this.setData({ showEndTime: true }) },
 
   closePickers() {
     this.setData({
@@ -197,6 +202,13 @@ Page({
       showStartTime: false,
       showEndTime: false,
     })
+    this._toggleTabBar(true)
+  },
+
+  _toggleTabBar(visible) {
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setShow(visible)
+    }
   },
 
   // ========== 选择确认回调 ==========
@@ -209,6 +221,7 @@ Page({
       selectedCourseName: course.courseName,
       showCourse: false,
     })
+    this._toggleTabBar(true)
   },
 
   onTeacherConfirm(e) {
@@ -219,6 +232,7 @@ Page({
       selectedTeacherName: teacher.name,
       showTeacher: false,
     })
+    this._toggleTabBar(true)
   },
 
   onStudentChange(e) {
@@ -237,6 +251,7 @@ Page({
       selectedStudentNames: names,
       showStudent: false,
     })
+    this._toggleTabBar(true)
   },
 
   onDateConfirm(e) {
@@ -245,18 +260,31 @@ Page({
       'form.date': date,
       showDate: false,
     })
+    this._toggleTabBar(true)
   },
 
   onStartTimeConfirm(e) {
     this.setData({ 'form.startTime': e.detail, showStartTime: false })
+    this._toggleTabBar(true)
   },
 
   onEndTimeConfirm(e) {
     this.setData({ 'form.endTime': e.detail, showEndTime: false })
+    this._toggleTabBar(true)
   },
 
   onLocationChange(e) {
     this.setData({ 'form.location': e.detail })
+  },
+
+  // ========== 重复设置 ==========
+
+  onRepeatChange(e) {
+    this.setData({ 'form.repeat': e.detail })
+  },
+
+  onRepeatWeeksChange(e) {
+    this.setData({ 'form.repeatWeeks': e.detail })
   },
 
   // ========== 提交排课 ==========
@@ -286,6 +314,35 @@ Page({
         }, { showLoading: true })
         wx.showToast({ title: '更新成功', icon: 'success' })
         setTimeout(() => wx.navigateBack(), 500)
+      } else if (form.repeat) {
+        // 批量排课
+        const res = await callFunction('lessonManage', {
+          action: 'batchCreate',
+          data: {
+            courseId: form.courseId,
+            teacherId: form.teacherId,
+            studentIds: form.studentIds,
+            date: form.date,
+            startTime: form.startTime,
+            endTime: form.endTime,
+            location: form.location,
+            repeatWeeks: form.repeatWeeks,
+          },
+        }, { showLoading: true })
+        const result = res.data || {}
+        const created = result.created || 0
+        const skipped = result.skipped || []
+        let msg = `成功排课 ${created} 节`
+        if (skipped.length > 0) {
+          msg += `，跳过 ${skipped.length} 节（冲突）`
+        }
+        wx.showModal({
+          title: '批量排课结果',
+          content: msg + (skipped.length > 0 ? '\n跳过日期：' + skipped.join('、') : ''),
+          showCancel: false,
+        })
+        this.resetForm()
+        this.loadRecentLessons()
       } else {
         await callFunction('lessonManage', {
           action: 'create',
@@ -312,6 +369,8 @@ Page({
         startTime: '',
         endTime: '',
         location: '',
+        repeat: false,
+        repeatWeeks: 4,
       },
       selectedCourseName: '',
       selectedTeacherName: '',
