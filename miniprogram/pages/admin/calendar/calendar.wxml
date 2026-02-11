@@ -1,4 +1,33 @@
 <view class="container">
+  <!-- 视图导航栏 -->
+  <view class="view-nav">
+    <view class="nav-row" wx:if="{{ viewMode !== 'month' }}">
+      <view class="nav-arrow" bind:tap="prevDate">‹</view>
+      <view class="nav-date" bind:tap="goToday">
+        <text wx:if="{{ viewMode === 'day' }}">{{ dateLabel }}</text>
+        <text wx:else>{{ weekLabel }}</text>
+      </view>
+      <view class="nav-arrow" bind:tap="nextDate">›</view>
+    </view>
+    <view class="view-tabs">
+      <view
+        class="view-tab {{ viewMode === 'day' ? 'active' : '' }}"
+        data-mode="day"
+        bind:tap="switchView"
+      >日</view>
+      <view
+        class="view-tab {{ viewMode === 'week' ? 'active' : '' }}"
+        data-mode="week"
+        bind:tap="switchView"
+      >周</view>
+      <view
+        class="view-tab {{ viewMode === 'month' ? 'active' : '' }}"
+        data-mode="month"
+        bind:tap="switchView"
+      >月</view>
+    </view>
+  </view>
+
   <!-- 筛选栏 -->
   <van-dropdown-menu active-color="var(--accent-color)">
     <van-dropdown-item
@@ -13,33 +42,51 @@
     />
   </van-dropdown-menu>
 
-  <!-- 日历组件 -->
-  <calendar
-    markedDates="{{ markedDates }}"
-    selectedDate="{{ selectedDate }}"
-    bind:dayclick="onDayClick"
-    bind:monthchange="onMonthChange"
-  />
-
   <!-- 加载中 -->
   <view class="loading-wrap" wx:if="{{ loading }}">
     <van-loading size="24px" color="var(--accent-color)">加载中...</van-loading>
   </view>
 
-  <!-- 当天课程列表 -->
-  <view class="day-lessons" wx:if="{{ !loading && dayLessons.length > 0 }}">
-    <view class="section-title">{{ selectedDate }} 共 {{ dayLessons.length }} 节课</view>
-    <lesson-card
-      wx:for="{{ dayLessons }}"
-      wx:key="_id"
-      lesson="{{ item }}"
-      mode="admin"
+  <!-- 月视图（用 hidden 保持 calendar 组件存活，避免翻月后被销毁重建） -->
+  <view hidden="{{ loading || viewMode !== 'month' }}">
+    <calendar
+      markedDates="{{ markedDates }}"
+      selectedDate="{{ selectedDate }}"
+      bind:dayclick="onDayClick"
+      bind:monthchange="onMonthChange"
+    />
+    <view class="day-lessons" wx:if="{{ dayLessons.length > 0 }}">
+      <view class="section-title">{{ selectedDate }} 共 {{ dayLessons.length }} 节课</view>
+      <lesson-card
+        wx:for="{{ dayLessons }}"
+        wx:key="_id"
+        lesson="{{ item }}"
+        mode="admin"
+      />
+    </view>
+    <van-empty
+      wx:if="{{ dayLessons.length === 0 && selectedDate }}"
+      description="当天暂无课程"
     />
   </view>
 
-  <!-- 空状态 -->
-  <van-empty
-    wx:if="{{ !loading && dayLessons.length === 0 && selectedDate }}"
-    description="当天暂无课程"
-  />
+  <!-- 日视图 -->
+  <block wx:if="{{ !loading && viewMode === 'day' }}">
+    <calendar-day
+      lessons="{{ dayLessons }}"
+      role="admin"
+      bind:lessonclick="onLessonClick"
+    />
+  </block>
+
+  <!-- 周视图 -->
+  <block wx:if="{{ !loading && viewMode === 'week' }}">
+    <calendar-week
+      lessons="{{ weekLessons }}"
+      weekDates="{{ weekDates }}"
+      role="admin"
+      bind:lessonclick="onLessonClick"
+      bind:dayclick="onWeekDayClick"
+    />
+  </block>
 </view>

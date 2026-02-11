@@ -2,6 +2,8 @@
   "navigationBarTitleText": "全局课程表",
   "usingComponents": {
     "calendar": "/components/calendar/calendar",
+    "calendar-day": "/components/calendar-day/calendar-day",
+    "calendar-week": "/components/calendar-week/calendar-week",
     "lesson-card": "/components/lesson-card/lesson-card",
     "van-empty": "@vant/weapp/empty/index",
     "van-loading": "@vant/weapp/loading/index",

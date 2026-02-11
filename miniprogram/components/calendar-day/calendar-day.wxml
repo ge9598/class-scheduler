@@ -1,0 +1,104 @@
+<view class="calendar-day">
+  <!-- 学生/老师：单列时间轴 -->
+  <scroll-view
+    wx:if="{{ role !== 'admin' }}"
+    scroll-y
+    class="timeline-scroll"
+  >
+    <view class="timeline-body" style="height: {{ totalHeight }}rpx;">
+      <!-- 时间刻度 -->
+      <view class="time-labels">
+        <view
+          class="time-label"
+          wx:for="{{ hours }}"
+          wx:key="*this"
+          style="top: {{ index * 120 }}rpx;"
+        >{{ item }}</view>
+      </view>
+      <!-- 网格线+课程块区域 -->
+      <view class="grid-area">
+        <view
+          class="grid-line"
+          wx:for="{{ hours }}"
+          wx:key="*this"
+          style="top: {{ index * 120 }}rpx;"
+        />
+        <view
+          class="lesson-block"
+          wx:for="{{ lessonBlocks }}"
+          wx:key="_id"
+          style="top: {{ item.top }}rpx; height: {{ item.height }}rpx; background-color: {{ item.color }};"
+          data-lesson="{{ item }}"
+          bind:tap="onBlockTap"
+        >
+          <view class="block-title ellipsis">{{ item.courseName }}</view>
+          <view class="block-time">{{ item.startTime }}-{{ item.endTime }}</view>
+          <view class="block-info ellipsis" wx:if="{{ role === 'student' }}">{{ item.teacherName }}</view>
+          <view class="block-info ellipsis" wx:if="{{ role === 'teacher' }}">{{ item.studentNames[0] }}{{ item.studentNames.length > 1 ? '等' + item.studentNames.length + '人' : '' }}</view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 管理员：按老师分列 -->
+  <scroll-view wx:if="{{ role === 'admin' }}" scroll-y class="timeline-scroll">
+    <!-- 老师名字头部行（多个老师时才显示） -->
+    <view class="admin-header" wx:if="{{ teacherColumns.length > 1 }}">
+      <view class="admin-time-placeholder"></view>
+      <view class="admin-teacher-names">
+        <view
+          class="admin-teacher-name"
+          wx:for="{{ teacherColumns }}"
+          wx:key="teacherId"
+        >{{ item.teacherName }}</view>
+      </view>
+    </view>
+    <!-- 时间轴主体 -->
+    <view class="admin-timeline" style="height: {{ totalHeight }}rpx;">
+      <!-- 左侧时间刻度 -->
+      <view class="time-labels">
+        <view
+          class="time-label"
+          wx:for="{{ hours }}"
+          wx:key="*this"
+          style="top: {{ index * 120 }}rpx;"
+        >{{ item }}</view>
+      </view>
+      <!-- 网格+老师列区域 -->
+      <view class="admin-grid">
+        <!-- 网格线 -->
+        <view
+          class="grid-line"
+          wx:for="{{ hours }}"
+          wx:key="*this"
+          style="top: {{ index * 120 }}rpx;"
+        />
+        <!-- 老师列 -->
+        <view class="admin-columns">
+          <view
+            class="teacher-column"
+            wx:for="{{ teacherColumns }}"
+            wx:key="teacherId"
+          >
+            <view
+              class="lesson-block admin-block"
+              wx:for="{{ item.blocks }}"
+              wx:for-item="block"
+              wx:key="_id"
+              style="top: {{ block.top }}rpx; height: {{ block.height }}rpx; background-color: {{ block.color }};"
+              data-lesson="{{ block }}"
+              bind:tap="onBlockTap"
+            >
+              <view class="block-title ellipsis">{{ block.courseName }}</view>
+              <view class="block-time">{{ block.startTime }}-{{ block.endTime }}</view>
+              <view class="block-info ellipsis">{{ block.studentNames[0] }}{{ block.studentNames.length > 1 ? '等' : '' }}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{ lessons.length === 0 }}" class="empty-tip">当天暂无课程</view>
+</view>

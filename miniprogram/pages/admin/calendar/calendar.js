@@ -1,17 +1,24 @@
 const { checkAuth } = require('../../../utils/auth')
 const { callFunction } = require('../../../utils/api')
-const { formatDate } = require('../../../utils/date')
+const { formatDate, getWeekRange, getWeekDates, getWeekDay } = require('../../../utils/date')
 
 Page({
   data: {
     selectedDate: '',
     markedDates: [],
     dayLessons: [],
-    allLessons: [],   // 当月所有课程（原始数据）
-    filteredLessons: [], // 筛选后的课程
+    weekLessons: [],
+    weekDates: [],
+    allLessons: [],
+    filteredLessons: [],
     loading: false,
     currentYear: 0,
     currentMonth: 0,
+
+    // 视图模式
+    viewMode: 'month', // day | week | month
+    dateLabel: '',
+    weekLabel: '',
 
     // 筛选
     filterTeacherId: '',
@@ -30,6 +37,14 @@ Page({
       this.getTabBar().setRole('admin')
     }
 
+    // 已有选中日期时保留（从详情页返回），否则初始化为今天
+    if (this.data.selectedDate) {
+      const { currentYear, currentMonth } = this.data
+      this.loadFilterOptions()
+      this.loadMonthLessons(currentYear, currentMonth)
+      return
+    }
+
     const now = new Date()
     const year = now.getFullYear()
     const month = now.getMonth() + 1
@@ -40,7 +55,86 @@ Page({
       currentMonth: month,
       selectedDate: today,
     })
+    this.updateDateLabel(today)
     this.loadFilterOptions()
+    this.loadMonthLessons(year, month)
+  },
+
+  updateDateLabel(dateStr) {
+    const weekDay = getWeekDay(dateStr)
+    const range = getWeekRange(dateStr)
+    this.setData({
+      dateLabel: dateStr + ' ' + weekDay,
+      weekLabel: range.start + ' ~ ' + range.end,
+      weekDates: getWeekDates(range.start),
+    })
+  },
+
+  switchView(e) {
+    const mode = e.currentTarget.dataset.mode
+    if (mode === this.data.viewMode) return
+    this.setData({ viewMode: mode })
+    this.applyFilter()
+  },
+
+  prevDate() {
+    const { viewMode, selectedDate } = this.data
+    const d = new Date(selectedDate.replace(/-/g, '/'))
+    if (viewMode === 'day') {
+      d.setDate(d.getDate() - 1)
+    } else if (viewMode === 'week') {
+      d.setDate(d.getDate() - 7)
+    } else {
+      d.setMonth(d.getMonth() - 1)
+    }
+    const newDate = formatDate(d)
+    const newMonth = d.getMonth() + 1
+    const newYear = d.getFullYear()
+
+    this.setData({ selectedDate: newDate })
+    this.updateDateLabel(newDate)
+
+    if (newYear !== this.data.currentYear || newMonth !== this.data.currentMonth) {
+      this.setData({ currentYear: newYear, currentMonth: newMonth })
+      this.loadMonthLessons(newYear, newMonth)
+    } else {
+      this.applyFilter()
+    }
+  },
+
+  nextDate() {
+    const { viewMode, selectedDate } = this.data
+    const d = new Date(selectedDate.replace(/-/g, '/'))
+    if (viewMode === 'day') {
+      d.setDate(d.getDate() + 1)
+    } else if (viewMode === 'week') {
+      d.setDate(d.getDate() + 7)
+    } else {
+      d.setMonth(d.getMonth() + 1)
+    }
+    const newDate = formatDate(d)
+    const newMonth = d.getMonth() + 1
+    const newYear = d.getFullYear()
+
+    this.setData({ selectedDate: newDate })
+    this.updateDateLabel(newDate)
+
+    if (newYear !== this.data.currentYear || newMonth !== this.data.currentMonth) {
+      this.setData({ currentYear: newYear, currentMonth: newMonth })
+      this.loadMonthLessons(newYear, newMonth)
+    } else {
+      this.applyFilter()
+    }
+  },
+
+  goToday() {
+    const today = formatDate(new Date())
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = now.getMonth() + 1
+
+    this.setData({ selectedDate: today, currentYear: year, currentMonth: month })
+    this.updateDateLabel(today)
     this.loadMonthLessons(year, month)
   },
 
@@ -85,11 +179,8 @@ Page({
     }
   },
 
-  /**
-   * 应用筛选条件
-   */
   applyFilter() {
-    const { allLessons, filterTeacherId, filterCourseId, selectedDate } = this.data
+    const { allLessons, filterTeacherId, filterCourseId, selectedDate, weekDates } = this.data
 
     let filtered = allLessons
     if (filterTeacherId) {
@@ -104,7 +195,11 @@ Page({
       .filter(l => l.date === selectedDate)
       .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''))
 
-    this.setData({ filteredLessons: filtered, markedDates, dayLessons })
+    const weekLessons = filtered
+      .filter(l => weekDates.includes(l.date))
+      .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''))
+
+    this.setData({ filteredLessons: filtered, markedDates, dayLessons, weekLessons })
   },
 
   onTeacherFilter(e) {
@@ -121,16 +216,40 @@ Page({
     const { date } = e.detail
     if (!date) return
 
-    const dayLessons = this.data.filteredLessons
-      .filter(l => l.date === date)
-      .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''))
+    // 再次点击同一天才切换到日视图
+    if (date === this.data.selectedDate) {
+      this.setData({ viewMode: 'day' })
+      this.updateDateLabel(date)
+      this.applyFilter()
+      return
+    }
 
-    this.setData({ selectedDate: date, dayLessons })
+    this.setData({ selectedDate: date })
+    this.updateDateLabel(date)
+    this.applyFilter()
   },
 
   onMonthChange(e) {
     const { year, month } = e.detail
     this.setData({ currentYear: year, currentMonth: month })
     this.loadMonthLessons(year, month)
+  },
+
+  onLessonClick(e) {
+    const { lesson } = e.detail
+    if (lesson && lesson._id) {
+      wx.navigateTo({
+        url: `/pages/admin/lesson-detail/lesson-detail?id=${lesson._id}`,
+      })
+    }
+  },
+
+  // 周视图中管理员点击某天 → 切换到日视图
+  onWeekDayClick(e) {
+    const { date } = e.detail
+    if (!date) return
+    this.setData({ selectedDate: date, viewMode: 'day' })
+    this.updateDateLabel(date)
+    this.applyFilter()
   },
 })

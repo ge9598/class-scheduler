@@ -117,6 +117,67 @@ function getWeekDay(dateStr) {
   return days[date.getDay()]
 }
 
+/**
+ * 获取某日期所在周的周一和周日日期
+ * @param {string} dateStr - 'YYYY-MM-DD'
+ * @returns {{ start: string, end: string }} 周一~周日
+ */
+function getWeekRange(dateStr) {
+  const date = parseDate(dateStr)
+  const day = date.getDay()
+  // 周一为起始：周日(0)→偏移6，其余→偏移 day-1
+  const diffToMonday = day === 0 ? 6 : day - 1
+  const monday = new Date(date)
+  monday.setDate(date.getDate() - diffToMonday)
+  const sunday = new Date(monday)
+  sunday.setDate(monday.getDate() + 6)
+  return { start: formatDate(monday), end: formatDate(sunday) }
+}
+
+/**
+ * 获取从起始日期开始的连续 7 天日期列表
+ * @param {string} startDate - 'YYYY-MM-DD' (周一)
+ * @returns {string[]} 7 个日期字符串
+ */
+function getWeekDates(startDate) {
+  const dates = []
+  const base = parseDate(startDate)
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(base)
+    d.setDate(base.getDate() + i)
+    dates.push(formatDate(d))
+  }
+  return dates
+}
+
+/**
+ * 时间轴定位：课程块在时间轴上的 top 和 height（rpx）
+ */
+const HOUR_HEIGHT = 120 // rpx per hour
+const START_HOUR = 7
+
+function getLessonPosition(startTime, endTime) {
+  const [sh, sm] = startTime.split(':').map(Number)
+  const [eh, em] = endTime.split(':').map(Number)
+  const top = ((sh - START_HOUR) * 60 + sm) * (HOUR_HEIGHT / 60)
+  const height = Math.max(((eh - sh) * 60 + (em - sm)) * (HOUR_HEIGHT / 60), 40)
+  return { top, height }
+}
+
+/**
+ * 根据 courseId 生成稳定的课程颜色
+ */
+const COURSE_COLORS = ['#4A90D9', '#67C23A', '#E6A23C', '#F56C6C', '#909399', '#49498e', '#d9a066']
+
+function getCourseColor(courseId) {
+  if (!courseId) return COURSE_COLORS[0]
+  let hash = 0
+  for (let i = 0; i < courseId.length; i++) {
+    hash = (hash * 31 + courseId.charCodeAt(i)) & 0x7fffffff
+  }
+  return COURSE_COLORS[hash % COURSE_COLORS.length]
+}
+
 module.exports = {
   formatDate,
   formatTime,
@@ -128,4 +189,10 @@ module.exports = {
   isToday,
   getDateLabel,
   getWeekDay,
+  getWeekRange,
+  getWeekDates,
+  getLessonPosition,
+  getCourseColor,
+  HOUR_HEIGHT,
+  START_HOUR,
 }

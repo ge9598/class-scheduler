@@ -1,0 +1,89 @@
+<view class="calendar-week">
+  <!-- 学生/老师：7 列 mini 时间轴 -->
+  <block wx:if="{{ role !== 'admin' }}">
+    <!-- 星期头部 -->
+    <view class="week-header">
+      <view class="time-col-header"></view>
+      <view
+        class="day-col-header"
+        wx:for="{{ dayColumns }}"
+        wx:key="date"
+      >
+        <view class="day-label">{{ item.label }}</view>
+        <view class="day-num">{{ item.dayOfMonth }}</view>
+      </view>
+    </view>
+    <!-- 时间轴区域 -->
+    <scroll-view scroll-y class="week-scroll">
+      <view class="week-body" style="height: {{ totalHeight }}rpx;">
+        <!-- 时间刻度 -->
+        <view class="time-col">
+          <view
+            class="time-label"
+            wx:for="{{ hours }}"
+            wx:key="*this"
+            style="top: {{ index * 120 }}rpx;"
+          >{{ item }}</view>
+        </view>
+        <!-- 7 列 -->
+        <view class="day-columns">
+          <view
+            class="day-col"
+            wx:for="{{ dayColumns }}"
+            wx:key="date"
+          >
+            <!-- 网格线 -->
+            <view
+              class="grid-line"
+              wx:for="{{ hours }}"
+              wx:for-item="hr"
+              wx:key="hr"
+              style="top: {{ index * 120 }}rpx;"
+            />
+            <!-- 课程块 -->
+            <view
+              class="week-block"
+              wx:for="{{ item.blocks }}"
+              wx:for-item="block"
+              wx:key="_id"
+              style="top: {{ block.top }}rpx; height: {{ block.height }}rpx; background-color: {{ block.color }};"
+              data-lesson="{{ block }}"
+              bind:tap="onBlockTap"
+            >
+              <view class="wb-title">{{ block.shortName }}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </block>
+
+  <!-- 管理员：概览模式 -->
+  <block wx:if="{{ role === 'admin' }}">
+    <view class="admin-week-grid">
+      <view
+        class="admin-day-cell"
+        wx:for="{{ daySummaries }}"
+        wx:key="date"
+        data-date="{{ item.date }}"
+        bind:tap="onDayTap"
+      >
+        <view class="adc-header">
+          <view class="adc-label">{{ item.label }}</view>
+          <view class="adc-num">{{ item.dayOfMonth }}</view>
+        </view>
+        <view class="adc-count" wx:if="{{ item.count > 0 }}">{{ item.count }}节</view>
+        <view class="adc-blocks">
+          <view
+            class="adc-bar"
+            wx:for="{{ item.colorBlocks }}"
+            wx:for-item="cb"
+            wx:key="_id"
+            style="background-color: {{ cb.color }};"
+          ></view>
+        </view>
+        <view class="adc-empty" wx:if="{{ item.count === 0 }}">-</view>
+      </view>
+    </view>
+  </block>
+</view>
