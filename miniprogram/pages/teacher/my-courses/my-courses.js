@@ -22,14 +22,8 @@ Page({
   async loadCourseStats() {
     this.setData({ loading: true })
     try {
-      // 获取老师的所有课程记录，按课程聚合统计
-      const app = getApp()
-      const userId = app.globalData.userInfo ? app.globalData.userInfo._id : ''
-      const now = new Date()
-      const year = now.getFullYear()
-
-      // 加载全年数据做统计
-      const res = await callFunction('lessonQuery', { year, month: null, userId })
+      // 获取老师的所有课程记录（不传日期参数返回全部，上限200条）
+      const res = await callFunction('lessonQuery', {})
       const lessons = res.data || []
 
       // 按课程聚合

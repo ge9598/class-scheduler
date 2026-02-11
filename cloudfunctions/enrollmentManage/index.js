@@ -20,19 +20,18 @@ exports.main = async (event, context) => {
 
     switch (action) {
       case 'create':
-        await checkPermission(openid, 'admin')
+        if (user.role !== 'admin') throw new Error('无权限操作')
         return await handleCreate(openid, data)
       case 'update':
-        await checkPermission(openid, 'admin')
+        if (user.role !== 'admin') throw new Error('无权限操作')
         return await handleUpdate(data)
       case 'list':
-        await checkPermission(openid, 'admin')
+        if (user.role !== 'admin') throw new Error('无权限操作')
         return await handleList(data)
       case 'getByStudent':
         return await handleGetByStudent(openid, user, data)
       case 'deductLesson':
-        // 内部调用（从 lessonManage.complete 触发），需 admin 权限
-        await checkPermission(openid, 'admin')
+        if (user.role !== 'admin') throw new Error('无权限操作')
         return await handleDeductLesson(data)
       default:
         return { code: -1, message: '未知操作' }
@@ -49,7 +48,8 @@ async function handleCreate(openid, data) {
   const { studentId, courseId, totalLessons } = data
   if (!studentId) throw new Error('请选择学生')
   if (!courseId) throw new Error('请选择课程')
-  if (!totalLessons || totalLessons < 1) throw new Error('课时数至少为1')
+  const numLessons = Number(totalLessons)
+  if (!numLessons || numLessons < 1 || numLessons > 999) throw new Error('课时数需在 1-999 之间')
 
   // 校验学生和课程存在
   const studentRes = await db.collection('users').doc(studentId).get().catch(() => null)
@@ -75,9 +75,9 @@ async function handleCreate(openid, data) {
       studentName: studentRes.data.name,
       courseId,
       courseName: courseRes.data.courseName,
-      totalLessons: Number(totalLessons),
+      totalLessons: numLessons,
       usedLessons: 0,
-      remainingLessons: Number(totalLessons),
+      remainingLessons: numLessons,
       status: 'active',
       createdBy: openid,
       createdAt: now,
@@ -128,7 +128,8 @@ async function handleUpdate(data) {
  * 查询购课记录列表（管理员）
  */
 async function handleList(data) {
-  const { studentId, courseId, status, page = 1, pageSize = 50 } = data
+  const { studentId, courseId, status, page = 1, pageSize: rawSize = 50 } = data
+  const pageSize = Math.min(Math.max(Number(rawSize) || 50, 1), 100)
 
   const where = {}
   if (studentId) where.studentId = studentId

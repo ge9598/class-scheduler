@@ -33,9 +33,7 @@ Page({
   async loadMonthLessons(year, month) {
     this.setData({ loading: true })
     try {
-      const app = getApp()
-      const userId = app.globalData.userInfo ? app.globalData.userInfo._id : ''
-      const res = await callFunction('lessonQuery', { year, month, userId })
+      const res = await callFunction('lessonQuery', { year, month })
       const allLessons = res.data || []
       const markedDates = [...new Set(allLessons.map(l => l.date))]
 

@@ -15,19 +15,11 @@ async function checkPermission(openid) {
 exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext()
   const openid = wxContext.OPENID
-  const { year, month, date, userId } = event
+  const { year, month, date } = event
 
   try {
-    // 优先用 userId 查找用户（switchUser 场景）
-    let user
-    if (userId) {
-      const uidRes = await db.collection('users').doc(userId).get().catch(() => null)
-      if (uidRes && uidRes.data) user = uidRes.data
-    }
-    if (!user) {
-      // fallback: 用 openid 查找（正常登录场景）
-      user = await checkPermission(openid)
-    }
+    // 始终用 openid 验证身份（安全：不接受前端传入的 userId）
+    const user = await checkPermission(openid)
     const { role } = user
 
     // 构建查询条件

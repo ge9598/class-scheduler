@@ -72,13 +72,8 @@ async function handleCreate(openid, data) {
   if (!teacherRes || !teacherRes.data) throw new Error('老师不存在')
   const teacherName = teacherRes.data.name
 
-  // 获取学生姓名列表（冗余存储）
-  const studentNames = []
-  for (const sid of studentIds) {
-    const sRes = await db.collection('users').doc(sid).get().catch(() => null)
-    if (!sRes || !sRes.data) throw new Error(`学生 ${sid} 不存在`)
-    studentNames.push(sRes.data.name)
-  }
+  // 批量获取学生姓名（冗余存储）
+  const studentNames = await batchGetUserNames(studentIds)
 
   // 时间冲突检测：同一日期、同一老师、时间重叠
   await checkTeacherConflict(teacherId, date, startTime, endTime)
@@ -127,7 +122,8 @@ async function handleBatchCreate(openid, data) {
   if (!date) throw new Error('请选择日期')
   if (!startTime || !endTime) throw new Error('请选择上课时间')
   if (startTime >= endTime) throw new Error('结束时间必须晚于开始时间')
-  if (!repeatWeeks || repeatWeeks < 2 || repeatWeeks > 52) throw new Error('重复周数需在 2-52 之间')
+  const weeks = Math.min(Math.max(Number(repeatWeeks) || 0, 0), 24)
+  if (weeks < 2) throw new Error('重复周数需在 2-24 之间')
 
   // 获取冗余名称
   const courseRes = await db.collection('courses').doc(courseId).get().catch(() => null)
@@ -138,17 +134,13 @@ async function handleBatchCreate(openid, data) {
   if (!teacherRes || !teacherRes.data) throw new Error('老师不存在')
   const teacherName = teacherRes.data.name
 
-  const studentNames = []
-  for (const sid of studentIds) {
-    const sRes = await db.collection('users').doc(sid).get().catch(() => null)
-    if (!sRes || !sRes.data) throw new Error(`学生 ${sid} 不存在`)
-    studentNames.push(sRes.data.name)
-  }
+  // 批量获取学生姓名
+  const studentNames = await batchGetUserNames(studentIds)
 
   // 生成 N 个日期
   const dates = []
   const baseDate = new Date(date + 'T00:00:00+08:00')
-  for (let i = 0; i < repeatWeeks; i++) {
+  for (let i = 0; i < weeks; i++) {
     const d = new Date(baseDate.getTime() + i * 7 * 86400000)
     const y = d.getFullYear()
     const m = String(d.getMonth() + 1).padStart(2, '0')
@@ -213,7 +205,7 @@ async function handleBatchCreate(openid, data) {
     data: {
       created: created.length,
       skipped,
-      total: repeatWeeks,
+      total: weeks,
     },
   }
 }
@@ -259,12 +251,7 @@ async function handleUpdate(data) {
 
   // 更新学生冗余
   if (studentIds) {
-    const studentNames = []
-    for (const sid of studentIds) {
-      const sRes = await db.collection('users').doc(sid).get().catch(() => null)
-      if (!sRes || !sRes.data) throw new Error(`学生 ${sid} 不存在`)
-      studentNames.push(sRes.data.name)
-    }
+    const studentNames = await batchGetUserNames(studentIds)
     updateData.studentIds = studentIds
     updateData.studentNames = studentNames
   }
@@ -343,20 +330,41 @@ async function handleComplete(data) {
 }
 
 /**
+ * 批量获取用户姓名（替代逐个查询的 N+1 模式）
+ */
+async function batchGetUserNames(userIds) {
+  if (!userIds || userIds.length === 0) return []
+  const res = await db.collection('users')
+    .where({ _id: _.in(userIds) })
+    .field({ _id: true, name: true })
+    .get()
+  const nameMap = {}
+  for (const u of res.data) { nameMap[u._id] = u.name }
+  // 按原始顺序返回，不存在的抛错
+  return userIds.map(id => {
+    if (!nameMap[id]) throw new Error(`学生 ${id} 不存在`)
+    return nameMap[id]
+  })
+}
+
+/**
  * 课时扣减（课程完成时自动调用）
  */
 async function deductEnrollmentLessons(courseId, studentIds) {
   if (!courseId || !studentIds || studentIds.length === 0) return
 
+  // 批量查询所有相关的 active 购课记录
+  const enrollRes = await db.collection('enrollments')
+    .where({ courseId, studentId: _.in(studentIds), status: 'active' })
+    .get()
+
+  const enrollMap = {}
+  for (const e of enrollRes.data) { enrollMap[e.studentId] = e }
+
   for (const studentId of studentIds) {
-    const enrollRes = await db.collection('enrollments')
-      .where({ studentId, courseId, status: 'active' })
-      .limit(1)
-      .get()
+    const enrollment = enrollMap[studentId]
+    if (!enrollment) continue
 
-    if (!enrollRes.data || enrollRes.data.length === 0) continue
-
-    const enrollment = enrollRes.data[0]
     const newUsed = enrollment.usedLessons + 1
     const newRemaining = enrollment.totalLessons - newUsed
 
@@ -375,7 +383,8 @@ async function deductEnrollmentLessons(courseId, studentIds) {
  * 查询排课列表（管理员视角，支持筛选）
  */
 async function handleList(data) {
-  const { date, teacherId, courseId, status, page = 1, pageSize = 20 } = data
+  const { date, teacherId, courseId, status, page = 1, pageSize: rawSize = 20 } = data
+  const pageSize = Math.min(Math.max(Number(rawSize) || 20, 1), 100)
 
   const where = {}
   if (date) where.date = date

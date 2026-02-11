@@ -95,7 +95,8 @@ async function handleAdd(data) {
  * 用户列表（支持按 role 筛选 + 分页）
  */
 async function handleList(data) {
-  const { role, page = 1, pageSize = 20 } = data
+  const { role, page = 1, pageSize: rawSize = 20 } = data
+  const pageSize = Math.min(Math.max(Number(rawSize) || 20, 1), 100)
 
   const where = {}
   if (role) where.role = role
@@ -184,6 +185,7 @@ async function handleGetByRole(data) {
   const res = await db.collection('users')
     .where({ role, openid: _.neq(null) })
     .field({ _id: true, name: true, phone: true })
+    .limit(200)
     .get()
 
   return {

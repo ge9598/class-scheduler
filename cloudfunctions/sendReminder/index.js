@@ -85,26 +85,42 @@ exports.main = async (event, context) => {
       return { code: 0, message: '无需发送提醒', sent: 0 }
     }
 
+    // 模板 ID 校验：未配置则跳过发送，不标记 reminderSent
+    const templateId = '' // TODO: 在微信公众平台申请模板后填入模板 ID
+    if (!templateId) {
+      console.warn('[sendReminder] templateId 未配置，跳过发送')
+      return { code: 0, message: 'templateId 未配置，跳过发送', sent: 0 }
+    }
+
+    // 批量获取所有相关用户（避免 N+1 查询）
+    const allUserIds = new Set()
+    for (const lesson of lessons) {
+      allUserIds.add(lesson.teacherId)
+      lesson.studentIds.forEach(id => allUserIds.add(id))
+    }
+    const userRes = await db.collection('users')
+      .where({ _id: _.in([...allUserIds]) })
+      .field({ _id: true, openid: true, role: true })
+      .get()
+    const userMap = {}
+    for (const u of userRes.data) { userMap[u._id] = u }
+
     let sentCount = 0
     const errors = []
 
     for (const lesson of lessons) {
-      // 收集需要通知的用户（老师 + 所有学生）
       const recipientIds = [lesson.teacherId, ...lesson.studentIds]
 
-      // 查找有 openid 的用户记录
       for (const userId of recipientIds) {
         try {
-          const userRes = await db.collection('users').doc(userId).get().catch(() => null)
-          if (!userRes || !userRes.data) continue
+          const user = userMap[userId]
+          if (!user) continue
 
-          const user = userRes.data
-          // 需要用户的 openid 发送订阅消息
           const targetOpenid = user.openid || userId
 
           await cloud.openapi.subscribeMessage.send({
             touser: targetOpenid,
-            templateId: '', // TODO: 在微信公众平台申请模板后填入模板 ID
+            templateId,
             page: `/pages/${user.role}/lesson-detail/lesson-detail?id=${lesson._id}`,
             data: {
               thing1: { value: lesson.courseName },             // 课程名称
@@ -115,7 +131,6 @@ exports.main = async (event, context) => {
             },
           })
         } catch (sendErr) {
-          // 用户未订阅或发送失败，记录但不中断
           errors.push({
             userId,
             lessonId: lesson._id,

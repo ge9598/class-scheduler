@@ -138,9 +138,14 @@ async function bindUserByPhone(openid, phone) {
 }
 
 /**
- * 切换身份（开发测试用）：仅管理员可调用，按手机号查找用户，返回其信息
+ * 切换身份（开发测试用）：仅开发环境 + 管理员可调用
+ * 生产环境上线前请删除此功能或设置 DEV_MODE 环境变量
  */
 async function handleSwitchUser(openid, data) {
+  // 环境守卫：仅开发环境可用
+  const isDev = process.env.DEV_MODE === 'true' || process.env.TCB_ENV === 'local'
+  if (!isDev) throw new Error('该功能仅在开发环境可用')
+
   // 仅管理员可切换身份
   const caller = await db.collection('users').doc(openid).get().catch(() => null)
   if (!caller || !caller.data || caller.data.role !== 'admin') {
