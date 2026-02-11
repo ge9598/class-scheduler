@@ -1,0 +1,36 @@
+<view class="container">
+  <view class="page-title">我的课程</view>
+
+  <van-loading wx:if="{{ loading }}" size="24px" color="var(--accent-color)" vertical>加载中...</van-loading>
+
+  <view wx:if="{{ !loading && courseStats.length > 0 }}">
+    <view
+      class="card course-card"
+      wx:for="{{ courseStats }}"
+      wx:key="courseId"
+    >
+      <view class="course-name">{{ item.courseName }}</view>
+
+      <view class="course-stats">
+        <view class="stat-row">
+          <text class="stat-label">排课总数</text>
+          <text class="stat-value">{{ item.total }}</text>
+        </view>
+        <view class="stat-row completed">
+          <text class="stat-label">已完成</text>
+          <text class="stat-value">{{ item.completed }}</text>
+        </view>
+        <view class="stat-row scheduled">
+          <text class="stat-label">待上课</text>
+          <text class="stat-value">{{ item.scheduled }}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <van-empty
+    wx:if="{{ !loading && courseStats.length === 0 }}"
+    description="暂无课程记录"
+    image="search"
+  />
+</view>

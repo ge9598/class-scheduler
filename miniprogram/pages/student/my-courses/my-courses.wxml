@@ -1,6 +1,51 @@
 <view class="container">
   <view class="page-title">我的课程</view>
-  <view class="card">
-    <text class="text-hint">购课记录将在 Phase 7 实现</text>
+
+  <van-loading wx:if="{{ loading }}" size="24px" color="var(--accent-color)" vertical>加载中...</van-loading>
+
+  <view wx:if="{{ !loading && enrollments.length > 0 }}">
+    <view
+      class="card course-card"
+      wx:for="{{ enrollments }}"
+      wx:key="_id"
+    >
+      <view class="flex-between">
+        <view class="course-name">{{ item.courseName }}</view>
+        <van-tag
+          type="{{ item.status === 'active' ? 'success' : 'default' }}"
+        >{{ statusLabels[item.status] }}</van-tag>
+      </view>
+
+      <view class="course-stats">
+        <view class="stat-row">
+          <text class="stat-label">总课时</text>
+          <text class="stat-value">{{ item.totalLessons }}</text>
+        </view>
+        <view class="stat-row">
+          <text class="stat-label">已上课</text>
+          <text class="stat-value">{{ item.usedLessons }}</text>
+        </view>
+        <view class="stat-row highlight">
+          <text class="stat-label">剩余</text>
+          <text class="stat-value">{{ item.remainingLessons }}</text>
+        </view>
+      </view>
+
+      <view class="progress-bar" wx:if="{{ item.totalLessons > 0 }}">
+        <view class="progress-track">
+          <view
+            class="progress-fill"
+            style="width: {{ item.usedLessons / item.totalLessons * 100 }}%;"
+          ></view>
+        </view>
+        <text class="progress-text text-hint">{{ item.usedLessons }}/{{ item.totalLessons }}</text>
+      </view>
+    </view>
   </view>
+
+  <van-empty
+    wx:if="{{ !loading && enrollments.length === 0 }}"
+    description="暂无购课记录"
+    image="search"
+  />
 </view>

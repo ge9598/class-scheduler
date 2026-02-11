@@ -1,1 +1,64 @@
-/* student my-courses page styles */
+.course-card {
+  margin-bottom: var(--spacing-md);
+}
+
+.course-name {
+  font-size: var(--font-lg);
+  font-weight: 600;
+}
+
+.course-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md) 0;
+  border-top: 1rpx solid var(--border-color);
+}
+
+.stat-row {
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  margin-bottom: 8rpx;
+}
+
+.stat-value {
+  display: block;
+  font-size: var(--font-xl);
+  font-weight: 600;
+}
+
+.stat-row.highlight .stat-value {
+  color: var(--accent-color);
+}
+
+.progress-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.progress-track {
+  flex: 1;
+  height: 12rpx;
+  background: var(--primary-light);
+  border-radius: 6rpx;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent-color);
+  border-radius: 6rpx;
+  transition: width 0.3s;
+}
+
+.progress-text {
+  font-size: var(--font-xs);
+  flex-shrink: 0;
+}

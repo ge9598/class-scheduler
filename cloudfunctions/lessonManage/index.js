@@ -322,6 +322,8 @@ async function handleComplete(data) {
   if (!existRes || !existRes.data) throw new Error('排课记录不存在')
   if (existRes.data.status !== 'scheduled') throw new Error('仅可标记已排课的课程为完成')
 
+  const lesson = existRes.data
+
   await db.collection('lessons').doc(_id).update({
     data: {
       status: 'completed',
@@ -329,7 +331,44 @@ async function handleComplete(data) {
     },
   })
 
+  // 自动扣减购课课时
+  try {
+    await deductEnrollmentLessons(lesson.courseId, lesson.studentIds)
+  } catch (err) {
+    console.warn('[课时扣减] 部分失败:', err.message)
+    // 不影响课程完成标记
+  }
+
   return { code: 0, message: '已标记完成' }
+}
+
+/**
+ * 课时扣减（课程完成时自动调用）
+ */
+async function deductEnrollmentLessons(courseId, studentIds) {
+  if (!courseId || !studentIds || studentIds.length === 0) return
+
+  for (const studentId of studentIds) {
+    const enrollRes = await db.collection('enrollments')
+      .where({ studentId, courseId, status: 'active' })
+      .limit(1)
+      .get()
+
+    if (!enrollRes.data || enrollRes.data.length === 0) continue
+
+    const enrollment = enrollRes.data[0]
+    const newUsed = enrollment.usedLessons + 1
+    const newRemaining = enrollment.totalLessons - newUsed
+
+    await db.collection('enrollments').doc(enrollment._id).update({
+      data: {
+        usedLessons: newUsed,
+        remainingLessons: Math.max(0, newRemaining),
+        status: newRemaining <= 0 ? 'completed' : 'active',
+        updatedAt: db.serverDate(),
+      },
+    })
+  }
 }
 
 /**

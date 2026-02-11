@@ -1,6 +1,122 @@
 <view class="container">
   <view class="page-title">购课管理</view>
-  <view class="card">
-    <text class="text-hint">购课管理将在 Phase 7 实现</text>
+
+  <!-- 添加购课记录 -->
+  <van-cell-group inset title="添加购课记录">
+    <van-cell
+      title="学生"
+      value="{{ selectedStudentName || '请选择学生' }}"
+      is-link
+      required
+      bind:click="showStudentPicker"
+      value-class="{{ selectedStudentName ? '' : 'placeholder' }}"
+    />
+    <van-cell
+      title="课程"
+      value="{{ selectedCourseName || '请选择课程' }}"
+      is-link
+      required
+      bind:click="showCoursePicker"
+      value-class="{{ selectedCourseName ? '' : 'placeholder' }}"
+    />
+    <van-cell title="购买课时" required center>
+      <van-stepper
+        slot="right-icon"
+        value="{{ form.totalLessons }}"
+        min="1"
+        max="200"
+        bind:change="onLessonsChange"
+      />
+    </van-cell>
+  </van-cell-group>
+
+  <view class="submit-area">
+    <van-button
+      class="btn-accent"
+      block
+      round
+      loading="{{ submitting }}"
+      bind:click="handleSubmit"
+    >确认添加</van-button>
   </view>
+
+  <!-- 购课记录列表 -->
+  <view class="section">
+    <view class="section-title">购课记录</view>
+
+    <van-loading wx:if="{{ loading }}" size="24px" color="var(--accent-color)" vertical>加载中...</van-loading>
+
+    <view wx:if="{{ !loading && enrollmentList.length > 0 }}">
+      <view
+        class="card enrollment-item"
+        wx:for="{{ enrollmentList }}"
+        wx:key="_id"
+      >
+        <view class="flex-between">
+          <view class="enrollment-name">{{ item.studentName }} - {{ item.courseName }}</view>
+          <van-tag
+            type="{{ item.status === 'active' ? 'success' : item.status === 'completed' ? 'primary' : 'default' }}"
+          >{{ statusLabels[item.status] }}</van-tag>
+        </view>
+        <view class="enrollment-stats">
+          <text class="stat-item">总课时: {{ item.totalLessons }}</text>
+          <text class="stat-item">已上: {{ item.usedLessons }}</text>
+          <text class="stat-item remain">剩余: {{ item.remainingLessons }}</text>
+        </view>
+        <view class="enrollment-actions" wx:if="{{ item.status === 'active' }}">
+          <van-button size="mini" bind:tap="handleEdit" data-item="{{ item }}">修改课时</van-button>
+        </view>
+      </view>
+    </view>
+
+    <van-empty
+      wx:if="{{ !loading && enrollmentList.length === 0 }}"
+      description="暂无购课记录"
+      image="search"
+    />
+  </view>
+
+  <!-- 学生选择弹窗 -->
+  <van-popup show="{{ showStudent }}" position="bottom" round bind:close="closePickers">
+    <van-picker
+      show-toolbar
+      title="选择学生"
+      columns="{{ studentColumns }}"
+      bind:confirm="onStudentConfirm"
+      bind:cancel="closePickers"
+    />
+  </van-popup>
+
+  <!-- 课程选择弹窗 -->
+  <van-popup show="{{ showCourse }}" position="bottom" round bind:close="closePickers">
+    <van-picker
+      show-toolbar
+      title="选择课程"
+      columns="{{ courseColumns }}"
+      bind:confirm="onCourseConfirm"
+      bind:cancel="closePickers"
+    />
+  </van-popup>
+
+  <!-- 编辑课时弹窗 -->
+  <van-popup show="{{ showEdit }}" position="bottom" round safe-area-inset-bottom bind:close="closeEdit">
+    <view class="edit-popup">
+      <view class="edit-title">修改课时 - {{ editItem.studentName }}</view>
+      <view class="edit-info text-secondary">课程：{{ editItem.courseName }}　已上: {{ editItem.usedLessons }} 节</view>
+      <view class="edit-stepper">
+        <text>总课时:</text>
+        <van-stepper
+          value="{{ editTotalLessons }}"
+          min="{{ editItem.usedLessons || 1 }}"
+          max="200"
+          bind:change="onEditLessonsChange"
+        />
+      </view>
+      <van-button type="primary" custom-class="btn-accent" block round bind:click="confirmEdit" loading="{{ editSubmitting }}">
+        确认修改
+      </van-button>
+    </view>
+  </van-popup>
+
+  <van-dialog id="van-dialog" />
 </view>

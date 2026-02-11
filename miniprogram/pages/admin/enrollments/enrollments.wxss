@@ -1,1 +1,59 @@
-/* admin enrollments page styles */
+.placeholder {
+  color: var(--text-hint) !important;
+}
+
+.submit-area {
+  padding: var(--spacing-lg) 0;
+}
+
+.enrollment-item {
+  margin-bottom: var(--spacing-sm);
+}
+
+.enrollment-name {
+  font-size: var(--font-md);
+  font-weight: 500;
+}
+
+.enrollment-stats {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-top: 12rpx;
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+}
+
+.stat-item.remain {
+  color: var(--accent-color);
+  font-weight: 500;
+}
+
+.enrollment-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12rpx;
+}
+
+/* 编辑弹窗 */
+.edit-popup {
+  padding: var(--spacing-lg);
+}
+
+.edit-title {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+.edit-info {
+  font-size: var(--font-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.edit-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xl);
+  font-size: var(--font-md);
+}

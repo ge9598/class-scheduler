@@ -1,0 +1,41 @@
+.course-card {
+  margin-bottom: var(--spacing-md);
+}
+
+.course-name {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+}
+
+.course-stats {
+  display: flex;
+  justify-content: space-between;
+  padding-top: var(--spacing-md);
+  border-top: 1rpx solid var(--border-color);
+}
+
+.stat-row {
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  margin-bottom: 8rpx;
+}
+
+.stat-value {
+  display: block;
+  font-size: var(--font-xl);
+  font-weight: 600;
+}
+
+.stat-row.completed .stat-value {
+  color: var(--success-color);
+}
+
+.stat-row.scheduled .stat-value {
+  color: var(--secondary-color);
+}

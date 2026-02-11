@@ -3,7 +3,6 @@
   "usingComponents": {
     "van-tag": "@vant/weapp/tag/index",
     "van-empty": "@vant/weapp/empty/index",
-    "van-loading": "@vant/weapp/loading/index",
-    "van-progress": "@vant/weapp/progress/index"
+    "van-loading": "@vant/weapp/loading/index"
   }
 }

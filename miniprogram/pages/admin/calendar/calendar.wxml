@@ -1,4 +1,18 @@
 <view class="container">
+  <!-- 筛选栏 -->
+  <van-dropdown-menu active-color="var(--accent-color)">
+    <van-dropdown-item
+      value="{{ filterTeacherId }}"
+      options="{{ teacherOptions }}"
+      bind:change="onTeacherFilter"
+    />
+    <van-dropdown-item
+      value="{{ filterCourseId }}"
+      options="{{ courseOptions }}"
+      bind:change="onCourseFilter"
+    />
+  </van-dropdown-menu>
+
   <!-- 日历组件 -->
   <calendar
     markedDates="{{ markedDates }}"
