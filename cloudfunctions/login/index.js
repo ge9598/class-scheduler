@@ -124,7 +124,10 @@ async function bindUserByPhone(openid, phone) {
   await db.collection('users').doc(pendingUser._id).remove()
 
   // 返回已激活的用户信息
-  const activatedRes = await db.collection('users').doc(openid).get()
+  const activatedRes = await db.collection('users').doc(openid).get().catch(() => null)
+  if (!activatedRes || !activatedRes.data) {
+    throw new Error('激活失败，请重试')
+  }
 
   return {
     code: 0,
@@ -135,9 +138,15 @@ async function bindUserByPhone(openid, phone) {
 }
 
 /**
- * 切换身份（开发测试用）：按手机号查找用户，返回其信息
+ * 切换身份（开发测试用）：仅管理员可调用，按手机号查找用户，返回其信息
  */
 async function handleSwitchUser(openid, data) {
+  // 仅管理员可切换身份
+  const caller = await db.collection('users').doc(openid).get().catch(() => null)
+  if (!caller || !caller.data || caller.data.role !== 'admin') {
+    throw new Error('仅管理员可切换身份')
+  }
+
   const { phone } = data
   if (!phone) throw new Error('请输入手机号')
 
@@ -163,7 +172,7 @@ async function handleSwitchUser(openid, data) {
 
   return {
     code: 0,
-    openid,
+    openid: user._id,
     userInfo: user,
   }
 }

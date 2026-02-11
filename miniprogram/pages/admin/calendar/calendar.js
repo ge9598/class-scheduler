@@ -43,17 +43,9 @@ Page({
     this.setData({ loading: true })
 
     try {
-      const res = await callFunction('lessonManage', {
-        action: 'list',
-        data: { page: 1, pageSize: 200 },
-      })
-
-      const allLessons = (res.data && res.data.list) || []
-
-      // 前端过滤当月数据
-      const monthStr = String(month).padStart(2, '0')
-      const prefix = `${year}-${monthStr}`
-      const monthLessons = allLessons.filter(l => l.date && l.date.startsWith(prefix))
+      // admin 调用 lessonQuery 不传 userId，服务端识别 admin 角色返回全部课程
+      const res = await callFunction('lessonQuery', { year, month })
+      const monthLessons = res.data || []
 
       // 提取有课日期作为标记点
       const markedDates = [...new Set(monthLessons.map(l => l.date))]

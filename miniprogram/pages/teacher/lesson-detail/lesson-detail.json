@@ -4,6 +4,7 @@
     "van-tag": "@vant/weapp/tag/index",
     "van-button": "@vant/weapp/button/index",
     "van-loading": "@vant/weapp/loading/index",
-    "van-empty": "@vant/weapp/empty/index"
+    "van-empty": "@vant/weapp/empty/index",
+    "feedback-form": "/components/feedback-form/feedback-form"
   }
 }

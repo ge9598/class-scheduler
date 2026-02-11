@@ -35,9 +35,12 @@
       </view>
     </view>
 
-    <!-- Feedback section -->
-    <view class="card feedback-card" wx:if="{{ feedback }}">
-      <view class="section-title">我的反馈</view>
+    <!-- 已有反馈展示 -->
+    <view class="card feedback-card" wx:if="{{ feedback && !showFeedbackForm }}">
+      <view class="flex-between">
+        <view class="section-title">我的反馈</view>
+        <van-button size="mini" bind:tap="goEditFeedback">编辑</van-button>
+      </view>
       <view class="feedback-content">{{ feedback.content }}</view>
       <view class="feedback-images" wx:if="{{ feedback.images && feedback.images.length > 0 }}">
         <image
@@ -53,8 +56,22 @@
       </view>
     </view>
 
-    <!-- Write feedback button -->
-    <view class="action-bar" wx:if="{{ lesson.status === 'completed' && !feedback }}">
+    <!-- 反馈表单（新建或编辑） -->
+    <view class="card" wx:if="{{ showFeedbackForm }}">
+      <view class="flex-between" style="margin-bottom: var(--spacing-md);">
+        <view class="section-title">{{ feedback ? '编辑反馈' : '撰写反馈' }}</view>
+        <van-button size="mini" bind:tap="cancelFeedback">取消</van-button>
+      </view>
+      <feedback-form
+        id="feedbackForm"
+        lessonId="{{ lessonId }}"
+        feedback="{{ feedback }}"
+        bind:submit="onFeedbackSubmit"
+      />
+    </view>
+
+    <!-- 写反馈按钮（课程已完成且无反馈且未展开表单） -->
+    <view class="action-bar" wx:if="{{ lesson.status === 'completed' && !feedback && !showFeedbackForm }}">
       <van-button type="primary" custom-class="btn-accent" block round bind:click="goWriteFeedback">
         写反馈
       </van-button>

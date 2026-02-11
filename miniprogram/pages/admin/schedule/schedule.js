@@ -308,9 +308,11 @@ Page({
 
     try {
       if (editMode) {
+        // 编辑模式只传排课相关字段，排除 repeat/repeatWeeks
+        const { repeat, repeatWeeks, ...editData } = form
         await callFunction('lessonManage', {
           action: 'update',
-          data: { _id: editLessonId, ...form },
+          data: { _id: editLessonId, ...editData },
         }, { showLoading: true })
         wx.showToast({ title: '更新成功', icon: 'success' })
         setTimeout(() => wx.navigateBack(), 500)
