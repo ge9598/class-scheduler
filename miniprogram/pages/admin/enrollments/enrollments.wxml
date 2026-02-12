@@ -1,8 +1,8 @@
 <view class="container">
-  <view class="page-title">购课管理</view>
+  <view class="page-title">课时包管理</view>
 
-  <!-- 添加购课记录 -->
-  <van-cell-group inset title="添加购课记录">
+  <!-- 添加课时包 -->
+  <van-cell-group inset title="添加课时包">
     <van-cell
       title="学生"
       value="{{ selectedStudentName || '请选择学生' }}"
@@ -19,7 +19,15 @@
       bind:click="showCoursePicker"
       value-class="{{ selectedCourseName ? '' : 'placeholder' }}"
     />
-    <van-cell title="购买课时" required center>
+    <van-cell
+      title="老师"
+      value="{{ selectedTeacherName || '请选择老师' }}"
+      is-link
+      required
+      bind:click="showTeacherPicker"
+      value-class="{{ selectedTeacherName ? '' : 'placeholder' }}"
+    />
+    <van-cell title="课时数量" required center>
       <van-stepper
         slot="right-icon"
         value="{{ form.totalLessons }}"
@@ -40,9 +48,9 @@
     >确认添加</van-button>
   </view>
 
-  <!-- 购课记录列表 -->
+  <!-- 课时包列表 -->
   <view class="section">
-    <view class="section-title">购课记录</view>
+    <view class="section-title">课时包列表</view>
 
     <van-loading wx:if="{{ loading }}" size="24px" color="var(--accent-color)" vertical>加载中...</van-loading>
 
@@ -58,6 +66,9 @@
             type="{{ item.status === 'active' ? 'success' : item.status === 'completed' ? 'primary' : 'default' }}"
           >{{ statusLabels[item.status] }}</van-tag>
         </view>
+        <view class="enrollment-teacher text-hint" wx:if="{{ item.teacherName }}">
+          老师：{{ item.teacherName }}
+        </view>
         <view class="enrollment-stats">
           <text class="stat-item">总课时: {{ item.totalLessons }}</text>
           <text class="stat-item">已上: {{ item.usedLessons }}</text>
@@ -71,7 +82,7 @@
 
     <van-empty
       wx:if="{{ !loading && enrollmentList.length === 0 }}"
-      description="暂无购课记录"
+      description="暂无课时包"
       image="search"
     />
   </view>
@@ -94,6 +105,17 @@
       title="选择课程"
       columns="{{ courseColumns }}"
       bind:confirm="onCourseConfirm"
+      bind:cancel="closePickers"
+    />
+  </van-popup>
+
+  <!-- 老师选择弹窗 -->
+  <van-popup show="{{ showTeacher }}" position="bottom" round bind:close="closePickers">
+    <van-picker
+      show-toolbar
+      title="选择老师"
+      columns="{{ teacherColumns }}"
+      bind:confirm="onTeacherConfirm"
       bind:cancel="closePickers"
     />
   </van-popup>

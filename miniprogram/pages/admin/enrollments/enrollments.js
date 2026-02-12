@@ -6,18 +6,23 @@ Page({
     form: {
       studentId: '',
       courseId: '',
+      teacherId: '',
       totalLessons: 10,
     },
     selectedStudentName: '',
     selectedCourseName: '',
+    selectedTeacherName: '',
 
     studentList: [],
     courseList: [],
+    teacherList: [],
     studentColumns: [],
     courseColumns: [],
+    teacherColumns: [],
 
     showStudent: false,
     showCourse: false,
+    showTeacher: false,
     submitting: false,
 
     // 列表
@@ -48,19 +53,23 @@ Page({
 
   async loadPickerData() {
     try {
-      const [studentRes, courseRes] = await Promise.all([
+      const [studentRes, courseRes, teacherRes] = await Promise.all([
         callFunction('userManage', { action: 'getByRole', data: { role: 'student' } }),
         callFunction('courseManage', { action: 'list', data: { pageSize: 100 } }),
+        callFunction('userManage', { action: 'getByRole', data: { role: 'teacher' } }),
       ])
 
       const studentList = studentRes.data || []
       const courseList = courseRes.data.list || []
+      const teacherList = teacherRes.data || []
 
       this.setData({
         studentList,
         courseList,
+        teacherList,
         studentColumns: studentList.map(s => `${s.name}（${s.phone}）`),
         courseColumns: courseList.map(c => c.courseName),
+        teacherColumns: teacherList.map(t => `${t.name}（${t.phone}）`),
       })
     } catch (err) {
       console.error('加载选项失败', err)
@@ -76,7 +85,7 @@ Page({
       })
       this.setData({ enrollmentList: res.data.list || [] })
     } catch (err) {
-      console.error('加载购课记录失败', err)
+      console.error('加载课时包失败', err)
     } finally {
       this.setData({ loading: false })
     }
@@ -100,8 +109,26 @@ Page({
     this.setData({ showCourse: true })
   },
 
+  showTeacherPicker() {
+    if (this.data.teacherColumns.length === 0) {
+      wx.showToast({ title: '暂无老师', icon: 'none' })
+      return
+    }
+    this.setData({ showTeacher: true })
+  },
+
+  onTeacherConfirm(e) {
+    const { index } = e.detail
+    const teacher = this.data.teacherList[index]
+    this.setData({
+      'form.teacherId': teacher._id,
+      selectedTeacherName: teacher.name,
+      showTeacher: false,
+    })
+  },
+
   closePickers() {
-    this.setData({ showStudent: false, showCourse: false })
+    this.setData({ showStudent: false, showCourse: false, showTeacher: false })
   },
 
   onStudentConfirm(e) {
@@ -136,6 +163,7 @@ Page({
 
     if (!form.studentId) return wx.showToast({ title: '请选择学生', icon: 'none' })
     if (!form.courseId) return wx.showToast({ title: '请选择课程', icon: 'none' })
+    if (!form.teacherId) return wx.showToast({ title: '请选择老师', icon: 'none' })
 
     this.setData({ submitting: true })
     try {
@@ -145,13 +173,14 @@ Page({
       }, { showLoading: true })
       wx.showToast({ title: '添加成功', icon: 'success' })
       this.setData({
-        form: { studentId: '', courseId: '', totalLessons: 10 },
+        form: { studentId: '', courseId: '', teacherId: '', totalLessons: 10 },
         selectedStudentName: '',
         selectedCourseName: '',
+        selectedTeacherName: '',
       })
       this.loadEnrollments()
     } catch (err) {
-      console.error('添加购课失败', err)
+      console.error('添加课时包失败', err)
     } finally {
       this.setData({ submitting: false })
     }

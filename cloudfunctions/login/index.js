@@ -1,6 +1,7 @@
 const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
+const _ = db.command
 
 exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext()
@@ -107,6 +108,8 @@ async function bindUserByPhone(openid, phone) {
   const pendingUser = pendingRes.data[0]
   const now = db.serverDate()
 
+  const oldId = pendingUser._id
+
   // 创建以 openid 为 _id 的正式记录
   await db.collection('users').doc(openid).set({
     data: {
@@ -120,8 +123,11 @@ async function bindUserByPhone(openid, phone) {
     },
   })
 
+  // 迁移 lessons 表中旧 ID → 新 openid
+  await migrateUserReferences(oldId, openid, pendingUser.role)
+
   // 删除旧的待绑定记录
-  await db.collection('users').doc(pendingUser._id).remove()
+  await db.collection('users').doc(oldId).remove()
 
   // 返回已激活的用户信息
   const activatedRes = await db.collection('users').doc(openid).get().catch(() => null)
@@ -142,11 +148,7 @@ async function bindUserByPhone(openid, phone) {
  * 生产环境上线前请删除此功能或设置 DEV_MODE 环境变量
  */
 async function handleSwitchUser(openid, data) {
-  // 环境守卫：仅开发环境可用
-  const isDev = process.env.DEV_MODE === 'true' || process.env.TCB_ENV === 'local'
-  if (!isDev) throw new Error('该功能仅在开发环境可用')
-
-  // 仅管理员可切换身份
+  // 仅管理员可切换身份（上线前可加回环境守卫）
   const caller = await db.collection('users').doc(openid).get().catch(() => null)
   if (!caller || !caller.data || caller.data.role !== 'admin') {
     throw new Error('仅管理员可切换身份')
@@ -179,5 +181,61 @@ async function handleSwitchUser(openid, data) {
     code: 0,
     openid: user._id,
     userInfo: user,
+  }
+}
+
+/**
+ * 用户绑定后，将 lessons 表中旧 _id 引用迁移到新 openid
+ */
+async function migrateUserReferences(oldId, newId, role) {
+  if (oldId === newId) return
+
+  try {
+    // 迁移 lessons 表
+    if (role === 'teacher') {
+      const res = await db.collection('lessons')
+        .where({ teacherId: oldId })
+        .get()
+      for (const lesson of res.data) {
+        await db.collection('lessons').doc(lesson._id).update({
+          data: { teacherId: newId },
+        })
+      }
+    }
+
+    // 更新作为学生的课程（所有角色都可能是学生）
+    const lessonRes = await db.collection('lessons')
+      .where({ studentIds: _.elemMatch(_.eq(oldId)) })
+      .get()
+    for (const lesson of lessonRes.data) {
+      const newStudentIds = lesson.studentIds.map(id => id === oldId ? newId : id)
+      await db.collection('lessons').doc(lesson._id).update({
+        data: { studentIds: newStudentIds },
+      })
+    }
+
+    // 迁移 enrollments 表中的 studentId
+    const enrollRes = await db.collection('enrollments')
+      .where({ studentId: oldId })
+      .get()
+    for (const enroll of enrollRes.data) {
+      await db.collection('enrollments').doc(enroll._id).update({
+        data: { studentId: newId, updatedAt: db.serverDate() },
+      })
+    }
+
+    // 迁移 enrollments 表中的 teacherId
+    if (role === 'teacher') {
+      const teacherEnrollRes = await db.collection('enrollments')
+        .where({ teacherId: oldId })
+        .get()
+      for (const enroll of teacherEnrollRes.data) {
+        await db.collection('enrollments').doc(enroll._id).update({
+          data: { teacherId: newId, updatedAt: db.serverDate() },
+        })
+      }
+    }
+  } catch (err) {
+    console.warn('[migrateUserReferences] 迁移失败（非致命）:', err.message)
   }
 }

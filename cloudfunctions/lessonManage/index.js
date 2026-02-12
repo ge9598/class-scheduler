@@ -318,9 +318,10 @@ async function handleComplete(data) {
     },
   })
 
-  // 自动扣减购课课时
+  // 自动扣减购课课时（按实际时长计算）
   try {
-    await deductEnrollmentLessons(lesson.courseId, lesson.studentIds)
+    const lessonHours = calcLessonHours(lesson.startTime, lesson.endTime)
+    await deductEnrollmentLessons(lesson.courseId, lesson.studentIds, lessonHours, lesson.teacherId)
   } catch (err) {
     console.warn('[课时扣减] 部分失败:', err.message)
     // 不影响课程完成标记
@@ -348,15 +349,38 @@ async function batchGetUserNames(userIds) {
 }
 
 /**
- * 课时扣减（课程完成时自动调用）
+ * 根据开始/结束时间计算课时数
+ * 每30分钟 = 0.5课时，不足30分钟的余数舍去
+ * 例: 1h→1, 1h20m→1, 1h30m→1.5, 1h45m→1.5, 2h→2
  */
-async function deductEnrollmentLessons(courseId, studentIds) {
-  if (!courseId || !studentIds || studentIds.length === 0) return
+function calcLessonHours(startTime, endTime) {
+  const [sh, sm] = startTime.split(':').map(Number)
+  const [eh, em] = endTime.split(':').map(Number)
+  const totalMinutes = (eh * 60 + em) - (sh * 60 + sm)
+  if (totalMinutes <= 0) return 0
+  return Math.floor(totalMinutes / 30) * 0.5
+}
 
-  // 批量查询所有相关的 active 购课记录
-  const enrollRes = await db.collection('enrollments')
-    .where({ courseId, studentId: _.in(studentIds), status: 'active' })
-    .get()
+/**
+ * 课时扣减（课程完成时自动调用）
+ * @param {number} lessonHours - 本节课消耗的课时数
+ */
+async function deductEnrollmentLessons(courseId, studentIds, lessonHours, teacherId) {
+  if (!courseId || !studentIds || studentIds.length === 0) return
+  if (!lessonHours || lessonHours <= 0) return
+
+  // 批量查询所有相关的 active 课时包（优先匹配 teacherId）
+  const where = { courseId, studentId: _.in(studentIds), status: 'active' }
+  if (teacherId) where.teacherId = teacherId
+
+  let enrollRes = await db.collection('enrollments').where(where).get()
+
+  // 兼容旧数据：若指定 teacherId 未找到任何记录，回退不限 teacherId
+  if (teacherId && (!enrollRes.data || enrollRes.data.length === 0)) {
+    enrollRes = await db.collection('enrollments')
+      .where({ courseId, studentId: _.in(studentIds), status: 'active' })
+      .get()
+  }
 
   const enrollMap = {}
   for (const e of enrollRes.data) { enrollMap[e.studentId] = e }
@@ -365,7 +389,7 @@ async function deductEnrollmentLessons(courseId, studentIds) {
     const enrollment = enrollMap[studentId]
     if (!enrollment) continue
 
-    const newUsed = enrollment.usedLessons + 1
+    const newUsed = enrollment.usedLessons + lessonHours
     const newRemaining = enrollment.totalLessons - newUsed
 
     await db.collection('enrollments').doc(enrollment._id).update({

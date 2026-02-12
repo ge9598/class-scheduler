@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "购课管理",
+  "navigationBarTitleText": "课时包管理",
   "usingComponents": {
     "van-button": "@vant/weapp/button/index",
     "van-cell": "@vant/weapp/cell/index",

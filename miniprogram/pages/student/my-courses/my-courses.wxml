@@ -11,6 +11,7 @@
     >
       <view class="flex-between">
         <view class="course-name">{{ item.courseName }}</view>
+        <view class="text-hint" wx:if="{{ item.teacherName }}">老师：{{ item.teacherName }}</view>
         <van-tag
           type="{{ item.status === 'active' ? 'success' : 'default' }}"
         >{{ statusLabels[item.status] }}</van-tag>
@@ -45,7 +46,7 @@
 
   <van-empty
     wx:if="{{ !loading && enrollments.length === 0 }}"
-    description="暂无购课记录"
+    description="暂无课时包"
     image="search"
   />
 </view>

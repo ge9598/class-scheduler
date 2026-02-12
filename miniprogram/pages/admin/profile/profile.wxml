@@ -13,7 +13,7 @@
   <!-- 管理功能入口 -->
   <van-cell-group inset title="管理功能" border="{{ false }}">
     <van-cell title="课程管理" is-link icon="orders-o" bind:click="goCourses" />
-    <van-cell title="购课管理" is-link icon="balance-list-o" bind:click="goEnrollments" />
+    <van-cell title="课时包管理" is-link icon="balance-list-o" bind:click="goEnrollments" />
   </van-cell-group>
 
   <!-- 退出登录 -->

@@ -42,30 +42,34 @@ exports.main = async (event, context) => {
 }
 
 /**
- * 创建购课记录（管理员）
+ * 创建课时包（管理员）
  */
 async function handleCreate(openid, data) {
-  const { studentId, courseId, totalLessons } = data
+  const { studentId, courseId, teacherId, totalLessons } = data
   if (!studentId) throw new Error('请选择学生')
   if (!courseId) throw new Error('请选择课程')
+  if (!teacherId) throw new Error('请选择老师')
   const numLessons = Number(totalLessons)
   if (!numLessons || numLessons < 1 || numLessons > 999) throw new Error('课时数需在 1-999 之间')
 
-  // 校验学生和课程存在
+  // 校验学生、课程、老师存在
   const studentRes = await db.collection('users').doc(studentId).get().catch(() => null)
   if (!studentRes || !studentRes.data) throw new Error('学生不存在')
 
   const courseRes = await db.collection('courses').doc(courseId).get().catch(() => null)
   if (!courseRes || !courseRes.data) throw new Error('课程不存在')
 
-  // 检查是否已有该学生该课程的 active 记录
+  const teacherRes = await db.collection('users').doc(teacherId).get().catch(() => null)
+  if (!teacherRes || !teacherRes.data) throw new Error('老师不存在')
+
+  // 检查是否已有该学生该课程该老师的 active 记录
   const existRes = await db.collection('enrollments')
-    .where({ studentId, courseId, status: 'active' })
+    .where({ studentId, courseId, teacherId, status: 'active' })
     .limit(1)
     .get()
 
   if (existRes.data && existRes.data.length > 0) {
-    throw new Error(`该学生已有「${courseRes.data.courseName}」的有效购课记录，请编辑已有记录`)
+    throw new Error(`该学生已有「${courseRes.data.courseName}」（${teacherRes.data.name}）的有效课时包，请编辑已有记录`)
   }
 
   const now = db.serverDate()
@@ -73,8 +77,11 @@ async function handleCreate(openid, data) {
     data: {
       studentId,
       studentName: studentRes.data.name,
+      studentPhone: studentRes.data.phone || '',
       courseId,
       courseName: courseRes.data.courseName,
+      teacherId,
+      teacherName: teacherRes.data.name,
       totalLessons: numLessons,
       usedLessons: 0,
       remainingLessons: numLessons,
@@ -87,13 +94,13 @@ async function handleCreate(openid, data) {
 
   return {
     code: 0,
-    message: '购课记录创建成功',
+    message: '课时包创建成功',
     data: { _id: addRes._id },
   }
 }
 
 /**
- * 编辑购课记录（修改总课时）
+ * 编辑课时包（修改总课时）
  */
 async function handleUpdate(data) {
   const { _id, totalLessons } = data
@@ -125,15 +132,16 @@ async function handleUpdate(data) {
 }
 
 /**
- * 查询购课记录列表（管理员）
+ * 查询课时包列表（管理员）
  */
 async function handleList(data) {
-  const { studentId, courseId, status, page = 1, pageSize: rawSize = 50 } = data
+  const { studentId, courseId, teacherId, status, page = 1, pageSize: rawSize = 50 } = data
   const pageSize = Math.min(Math.max(Number(rawSize) || 50, 1), 100)
 
   const where = {}
   if (studentId) where.studentId = studentId
   if (courseId) where.courseId = courseId
+  if (teacherId) where.teacherId = teacherId
   if (status) where.status = status
 
   const countRes = await db.collection('enrollments').where(where).count()
@@ -156,22 +164,32 @@ async function handleList(data) {
 }
 
 /**
- * 查询学生自己的购课记录
+ * 查询学生自己的课时包
+ * 同时按 studentId 和 studentPhone 查询，兼容绑定前后的数据
  */
 async function handleGetByStudent(openid, user, data) {
-  // 管理员可查任意学生，学生只能查自己
-  let studentId
-  if (user.role === 'admin') {
-    studentId = data.studentId || user._id
-  } else if (user.role === 'student') {
-    studentId = user._id
-  } else if (user.role === 'teacher') {
-    // 老师查自己教的课程的学生购课情况不在此接口
+  if (user.role === 'teacher') {
     throw new Error('老师请通过课程详情查看')
   }
 
+  let studentId, studentPhone
+  if (user.role === 'admin' && data.studentId) {
+    studentId = data.studentId
+    const stu = await db.collection('users').doc(studentId).get().catch(() => null)
+    if (stu && stu.data) studentPhone = stu.data.phone
+  } else {
+    studentId = user._id
+    studentPhone = user.phone
+  }
+
+  // 同时用 studentId 和 studentPhone 查询，兼容新旧数据
+  const conditions = [{ studentId }]
+  if (studentPhone) {
+    conditions.push({ studentPhone })
+  }
+
   const res = await db.collection('enrollments')
-    .where({ studentId })
+    .where(conditions.length > 1 ? _.or(conditions) : conditions[0])
     .orderBy('createdAt', 'desc')
     .limit(100)
     .get()
@@ -181,10 +199,10 @@ async function handleGetByStudent(openid, user, data) {
 
 /**
  * 课时扣减（课程完成时调用）
- * data: { courseId, studentIds }
+ * data: { courseId, studentIds, teacherId }
  */
 async function handleDeductLesson(data) {
-  const { courseId, studentIds } = data
+  const { courseId, studentIds, teacherId } = data
   if (!courseId || !studentIds || studentIds.length === 0) {
     return { code: 0, message: '无需扣减' }
   }
@@ -192,14 +210,25 @@ async function handleDeductLesson(data) {
   const results = []
 
   for (const studentId of studentIds) {
-    // 查找该学生该课程的 active 购课记录
-    const enrollRes = await db.collection('enrollments')
-      .where({ studentId, courseId, status: 'active' })
+    // 查找该学生该课程的 active 课时包（优先匹配 teacherId）
+    const where = { studentId, courseId, status: 'active' }
+    if (teacherId) where.teacherId = teacherId
+
+    let enrollRes = await db.collection('enrollments')
+      .where(where)
       .limit(1)
       .get()
 
+    // 兼容旧数据：若指定 teacherId 未找到，回退不限 teacherId
+    if (teacherId && (!enrollRes.data || enrollRes.data.length === 0)) {
+      enrollRes = await db.collection('enrollments')
+        .where({ studentId, courseId, status: 'active' })
+        .limit(1)
+        .get()
+    }
+
     if (!enrollRes.data || enrollRes.data.length === 0) {
-      results.push({ studentId, deducted: false, reason: '无有效购课记录' })
+      results.push({ studentId, deducted: false, reason: '无有效课时包' })
       continue
     }
 
