@@ -6,3 +6,11 @@ miniprogram/node_modules/
 nul
 .claude/
 .serena/
+
+# 微信开发者工具自动生成
+cloudfunctions/all/
+cloudfunctions/launch-*/
+
+# 敏感配置（模板ID、云环境ID等）
+miniprogram/config.js
+cloudfunctions/*/env.js
