@@ -1,4 +1,23 @@
 <view class="container">
+  <!-- 即将上课提醒 banner -->
+  <view class="upcoming-banner" wx:if="{{ upcomingLessons.length > 0 }}">
+    <view class="upcoming-header">
+      <text class="upcoming-icon">&#x1F514;</text>
+      <text class="upcoming-title">即将上课</text>
+      <view class="upcoming-close" bind:tap="dismissReminder">&#x2715;</view>
+    </view>
+    <view
+      class="upcoming-item"
+      wx:for="{{ upcomingLessons }}"
+      wx:key="_id"
+      data-id="{{ item._id }}"
+      bind:tap="onUpcomingTap"
+    >
+      <text class="upcoming-name">{{ item.courseName }}</text>
+      <text class="upcoming-time">{{ item.startTime }} ({{ item.minutesLeft }}分钟后)</text>
+    </view>
+  </view>
+
   <!-- 视图导航栏 -->
   <view class="view-nav">
     <view class="nav-row" wx:if="{{ viewMode !== 'month' }}">

@@ -1,5 +1,6 @@
 const { checkAuth } = require('../../../utils/auth')
 const { callFunction, uploadImages } = require('../../../utils/api')
+const { requestSubscribe } = require('../../../utils/subscribe')
 
 Page({
   data: {
@@ -25,6 +26,7 @@ Page({
     if (this.data.lessonId) {
       this.loadLesson(this.data.lessonId)
     }
+    requestSubscribe()
   },
 
   async loadLesson(lessonId) {

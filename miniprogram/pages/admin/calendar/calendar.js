@@ -1,6 +1,7 @@
 const { checkAuth } = require('../../../utils/auth')
 const { callFunction } = require('../../../utils/api')
 const { formatDate, getWeekRange, getWeekDates, getWeekDay } = require('../../../utils/date')
+const { requestSubscribe, getUpcomingLessons } = require('../../../utils/subscribe')
 
 Page({
   data: {
@@ -19,6 +20,9 @@ Page({
     viewMode: 'month', // day | week | month
     dateLabel: '',
     weekLabel: '',
+
+    // 即将上课提醒
+    upcomingLessons: [],
 
     // 筛选
     filterTeacherId: '',
@@ -172,6 +176,7 @@ Page({
 
       this.setData({ allLessons })
       this.applyFilter()
+      this.checkUpcoming(allLessons)
     } catch (err) {
       console.error('[课程表] 加载失败:', err)
     } finally {
@@ -251,5 +256,23 @@ Page({
     this.setData({ selectedDate: date, viewMode: 'day' })
     this.updateDateLabel(date)
     this.applyFilter()
+  },
+
+  checkUpcoming(lessons) {
+    const upcoming = getUpcomingLessons(lessons)
+    this.setData({ upcomingLessons: upcoming })
+  },
+
+  dismissReminder() {
+    this.setData({ upcomingLessons: [] })
+  },
+
+  onUpcomingTap(e) {
+    const id = e.currentTarget.dataset.id
+    if (id) {
+      wx.navigateTo({
+        url: `/pages/admin/lesson-detail/lesson-detail?id=${id}`,
+      })
+    }
   },
 })

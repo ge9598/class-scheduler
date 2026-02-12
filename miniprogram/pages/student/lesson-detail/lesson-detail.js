@@ -1,5 +1,6 @@
 const { checkAuth } = require('../../../utils/auth')
 const { callFunction } = require('../../../utils/api')
+const { requestSubscribe } = require('../../../utils/subscribe')
 
 Page({
   data: {
@@ -24,6 +25,8 @@ Page({
     if (this.data.lessonId) {
       this.loadLesson(this.data.lessonId)
     }
+    // 自然交互节点：查看课程详情时引导订阅
+    requestSubscribe()
   },
 
   async loadLesson(lessonId) {
