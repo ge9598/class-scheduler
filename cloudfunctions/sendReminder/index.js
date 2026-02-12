@@ -85,8 +85,7 @@ exports.main = async (event, context) => {
       return { code: 0, message: '无需发送提醒', sent: 0 }
     }
 
-    // 模板 ID 校验：未配置则跳过发送，不标记 reminderSent
-    const templateId = '' // TODO: 在微信公众平台申请模板后填入模板 ID
+    const { templateId } = require('./env')
     if (!templateId) {
       console.warn('[sendReminder] templateId 未配置，跳过发送')
       return { code: 0, message: 'templateId 未配置，跳过发送', sent: 0 }
@@ -118,16 +117,21 @@ exports.main = async (event, context) => {
 
           const targetOpenid = user.openid || userId
 
+          // 学生名单：最多显示2个名字+等X人
+          const studentNames = lesson.studentNames || []
+          let studentStr = studentNames.slice(0, 2).join('、')
+          if (studentNames.length > 2) studentStr += `等${studentNames.length}人`
+
           await cloud.openapi.subscribeMessage.send({
             touser: targetOpenid,
             templateId,
             page: `/pages/${user.role}/lesson-detail/lesson-detail?id=${lesson._id}`,
             data: {
-              thing1: { value: lesson.courseName },             // 课程名称
-              time2: { value: `${lesson.date} ${lesson.startTime}` }, // 上课时间
-              thing3: { value: lesson.teacherName },            // 授课老师
-              thing5: { value: lesson.location || '待定' },     // 上课地点
-              thing4: { value: '距开课还有15分钟' },             // 备注
+              date1: { value: `${lesson.date} ${lesson.startTime}-${lesson.endTime}` }, // 上课时间
+              name3: { value: studentStr || '未分配' },          // 上课学生
+              thing2: { value: lesson.courseName },              // 课程名称
+              thing10: { value: lesson.teacherName },            // 讲师
+              thing5: { value: '距开课还有15分钟，请做好准备' },    // 温馨提示
             },
           })
         } catch (sendErr) {

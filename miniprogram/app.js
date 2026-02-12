@@ -1,3 +1,5 @@
+const config = require('./config')
+
 App({
   onLaunch() {
     if (!wx.cloud) {
@@ -6,7 +8,7 @@ App({
     }
 
     wx.cloud.init({
-      env: 'cloud1-5g2pwz8i870360c1', // TODO: 替换为你的云开发环境ID
+      env: config.cloudEnvId,
       traceUser: true,
     })
   },
@@ -15,5 +17,6 @@ App({
     userInfo: null,
     role: null,    // 'admin' | 'teacher' | 'student'
     openid: null,
+    editLessonId: null,  // 用于 TabBar 页面间传递编辑参数
   },
 })

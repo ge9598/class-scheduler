@@ -40,10 +40,13 @@
         >
           微信授权绑定手机号
         </button>
+        <view class="manual-link" bind:tap="showManualInput">
+          <text>手动输入手机号</text>
+        </view>
       </view>
 
       <!-- 手动输入手机号模式 -->
-      <view wx:if="{{ !useWxPhoneAuth || isSwitchMode }}" class="bind-form">
+      <view wx:if="{{ !useWxPhoneAuth || isSwitchMode || showManual }}" class="bind-form">
         <van-field
           value="{{ phone }}"
           type="number"

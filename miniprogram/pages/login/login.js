@@ -103,8 +103,12 @@ Page({
     }
   },
 
+  showManualInput() {
+    this.setData({ showManual: true })
+  },
+
   handleBack() {
-    this.setData({ step: 'login', phone: '', isSwitchMode: false })
+    this.setData({ step: 'login', phone: '', isSwitchMode: false, showManual: false })
   },
 
   navigateByRole(role) {

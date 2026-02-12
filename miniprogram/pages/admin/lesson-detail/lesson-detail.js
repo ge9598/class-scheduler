@@ -1,6 +1,7 @@
 const { checkAuth } = require('../../../utils/auth')
 const { callFunction } = require('../../../utils/api')
-const Dialog = require('@vant/weapp/dialog/dialog')
+const { requestSubscribe } = require('../../../utils/subscribe')
+const Dialog = require('@vant/weapp/dialog/dialog').default
 
 Page({
   data: {
@@ -25,6 +26,7 @@ Page({
     if (this.data.lessonId) {
       this.loadLesson(this.data.lessonId)
     }
+    requestSubscribe()
   },
 
   async loadLesson(lessonId) {
@@ -61,9 +63,10 @@ Page({
   },
 
   goEdit() {
-    const { lessonId } = this.data
-    wx.navigateTo({
-      url: `/pages/admin/schedule/schedule?lessonId=${lessonId}`,
+    const app = getApp()
+    app.globalData.editLessonId = this.data.lessonId
+    wx.switchTab({
+      url: '/pages/admin/schedule/schedule',
     })
   },
 

@@ -106,6 +106,16 @@
     >
       {{ editMode ? '保存修改' : (form.repeat ? '批量排课（' + form.repeatWeeks + '节）' : '确认排课') }}
     </van-button>
+    <van-button
+      wx:if="{{ editMode }}"
+      block
+      round
+      plain
+      custom-style="margin-top: 16rpx;"
+      bind:click="cancelEdit"
+    >
+      取消编辑
+    </van-button>
   </view>
 
   <!-- 最近排课列表 -->

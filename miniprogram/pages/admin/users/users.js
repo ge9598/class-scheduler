@@ -1,6 +1,6 @@
 const { checkAuth } = require('../../../utils/auth')
 const { callFunction } = require('../../../utils/api')
-const Dialog = require('@vant/weapp/dialog/dialog')
+const Dialog = require('@vant/weapp/dialog/dialog').default
 
 Page({
   data: {

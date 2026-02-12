@@ -1,7 +1,7 @@
 const { checkAuth } = require('../../../utils/auth')
 const { callFunction } = require('../../../utils/api')
 const { formatDate } = require('../../../utils/date')
-const Dialog = require('@vant/weapp/dialog/dialog')
+const Dialog = require('@vant/weapp/dialog/dialog').default
 
 Page({
   data: {
@@ -62,11 +62,8 @@ Page({
     },
   },
 
-  onLoad(options) {
+  onLoad() {
     checkAuth('admin')
-    if (options.lessonId) {
-      this.setData({ editMode: true, editLessonId: options.lessonId })
-    }
   },
 
   onShow() {
@@ -74,11 +71,24 @@ Page({
       this.getTabBar().setActive(1)
       this.getTabBar().setRole('admin')
     }
-    this.loadPickerData()
-    if (!this.data.editMode) {
+
+    // 检查是否从课程详情传入编辑参数
+    const app = getApp()
+    if (app.globalData.editLessonId) {
+      const lessonId = app.globalData.editLessonId
+      app.globalData.editLessonId = null  // 用完即清
+      this.setData({ editMode: true, editLessonId: lessonId })
+      this.loadPickerData()
+      this.loadLesson(lessonId)
+    } else if (this.data.editMode) {
+      // 从编辑模式返回时重置为新建模式
+      this.setData({ editMode: false, editLessonId: null })
+      this.resetForm()
+      this.loadPickerData()
       this.loadRecentLessons()
     } else {
-      this.loadLesson(this.data.editLessonId)
+      this.loadPickerData()
+      this.loadRecentLessons()
     }
   },
 
@@ -382,11 +392,16 @@ Page({
 
   // ========== 排课列表操作 ==========
 
+  cancelEdit() {
+    this.setData({ editMode: false, editLessonId: null })
+    this.resetForm()
+    this.loadRecentLessons()
+  },
+
   handleEdit(e) {
     const lesson = e.currentTarget.dataset.lesson
-    wx.navigateTo({
-      url: `/pages/admin/schedule/schedule?lessonId=${lesson._id}`,
-    })
+    this.setData({ editMode: true, editLessonId: lesson._id })
+    this.loadLesson(lesson._id)
   },
 
   handleComplete(e) {

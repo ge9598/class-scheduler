@@ -183,7 +183,7 @@ async function handleGetByRole(data) {
   if (!role) throw new Error('缺少角色参数')
 
   const res = await db.collection('users')
-    .where({ role, openid: _.neq(null) })
+    .where({ role })
     .field({ _id: true, name: true, phone: true })
     .limit(200)
     .get()

@@ -116,6 +116,17 @@
   width: 100%;
 }
 
+.manual-link {
+  text-align: center;
+  margin-top: 32rpx;
+}
+
+.manual-link text {
+  font-size: var(--font-sm);
+  color: var(--text-hint);
+  text-decoration: underline;
+}
+
 .back-link {
   text-align: center;
   margin-top: 40rpx;
